@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wonderland Escape Room</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Intro: double door cover -->
+    <section id="intro-section" class="page active">
+      <div class="doors">
+        <div class="door left"><span class="handle"></span></div>
+        <div class="door right"><span class="handle"></span></div>
+      </div>
+      <h1 class="intro-title">WONDERLAND ESCAPE ROOM</h1>
+      <p class="intro-subtitle">문을 열고 게임을 시작하세요</p>
+      <button id="start-btn" class="primary-btn">시작하기</button>
+      <p class="credit">Genspark로 제작됨</p>
+    </section>
+
+    <!-- Character introduction -->
+    <section id="character-section" class="page">
+      <div class="content">
+        <h2 class="section-title">등장 인물 소개 - 언덕 상사</h2>
+        <div class="character-container">
+          <img src="manager.png" alt="언덕 상사" class="character-img" />
+          <div class="character-info">
+            <div class="tags">
+              <span class="tag tag-red">교육 담당</span>
+              <span class="tag tag-orange">난이도: 어려움</span>
+              <span class="tag tag-blue">성격: 까칠함</span>
+            </div>
+            <div class="quote-box">
+              <p class="quote"><span class="quote-mark">"</span>왔냐? … 그래, 시간은 맞춰 왔네.<span class="quote-mark">"</span></p>
+              <p class="quote-body">"여기가 원더랜드다. 오늘 하루 네 교육은 내가 맡았어. 실수하면? 그냥 퇴근하지 말고 나가라. 시간 아까우니까 바로 시작한다."</p>
+            </div>
+            <div class="rules-box">
+              <h3 class="rules-title">게임 규칙</h3>
+              <ul class="rules-list">
+                <li>언덕의 지시에 따라 네 가지 테스트를 통과해야 합니다</li>
+                <li>각 미션은 제한 시간 내에 완료해야 합니다</li>
+                <li>실패 시 언덕의 잔소리를 듣게 됩니다</li>
+                <li>모든 미션을 완료하면 원더랜드 직원으로 인정받습니다</li>
+              </ul>
+            </div>
+            <button id="to-mission1" class="primary-btn">미션 시작</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mission 1: Morning routine ordering -->
+    <section id="mission1-section" class="page">
+      <div class="content">
+        <h2 class="section-title">미션 1 - 모닝 루틴 맞추기</h2>
+        <div class="mission-row">
+          <div class="mission-col description-col">
+            <div class="mission-desc-box">
+              <h3>미션 설명</h3>
+              <p>주인의 아침 일과를 올바른 순서대로 맞춰야 합니다. 각 아이템을 클릭하여 올바른 순서를 맞추세요.</p>
+            </div>
+            <div class="mission-desc-box hints">
+              <h3>힌트</h3>
+              <ul>
+                <li>시간은 아침의 시작을 알립니다</li>
+                <li>빛이 들어와야 무언가를 볼 수 있습니다</li>
+                <li>카페인은 하루를 깨우는 데 필수적입니다</li>
+                <li>오늘의 소식을 확인하는 것은 늘 마지막입니다</li>
+              </ul>
+            </div>
+          </div>
+          <div class="mission-col interactive-col">
+            <div class="interactive-items">
+              <button class="item-btn" data-item="alarm"><img src="icon_alarm.png" alt="알람 끄기"><span>알람 끄기</span></button>
+              <button class="item-btn" data-item="curtain"><img src="icon_curtain.png" alt="커튼 열기"><span>커튼 열기</span></button>
+              <button class="item-btn" data-item="coffee"><img src="icon_coffee.png" alt="커피 내리기"><span>커피 내리기</span></button>
+              <button class="item-btn" data-item="news"><img src="icon_tv.png" alt="뉴스 키기"><span>뉴스 키기</span></button>
+            </div>
+            <div class="order-box">
+              <p class="order-instruction">여기에 순서대로 배치하세요</p>
+              <div class="order-slots">
+                <div class="slot" data-slot="1"><span class="slot-number">1</span></div>
+                <div class="slot" data-slot="2"><span class="slot-number">2</span></div>
+                <div class="slot" data-slot="3"><span class="slot-number">3</span></div>
+                <div class="slot" data-slot="4"><span class="slot-number">4</span></div>
+              </div>
+              <button id="check-order" class="primary-btn">확인하기</button>
+            </div>
+          </div>
+        </div>
+        <div id="mission1-message" class="mission-message"></div>
+      </div>
+    </section>
+
+    <!-- Mission 2: Car location -->
+    <section id="mission2-section" class="page">
+      <div class="content">
+        <h2 class="section-title">미션 2 - 주인의 차 위치 찾기</h2>
+        <div class="mission2-top">
+          <div class="audio-box">
+            <h3>오디오 힌트 듣기</h3>
+            <audio id="hint-audio" controls>
+              <source src="audio_beep.wav" type="audio/wav">
+              Your browser does not support the audio element.
+            </audio>
+            <p class="audio-desc">대화 기록과 배경음을 주의 깊게 들어보세요. 모든 힌트가 중요합니다.</p>
+          </div>
+          <div class="quote-box mission2-quote">
+            <p class="quote"><span class="quote-mark">"</span>차 위치도 못 찾는 놈이 뭘 하겠냐?<span class="quote-mark">"</span></p>
+            <p class="quote-body">"말투, 주변 소리, 배경 잡음까지 다 들어야 한다. 대충 들으면 놓친다. 집중해."</p>
+          </div>
+        </div>
+        <div class="mission-row mission2-row">
+          <div class="mission-col description-col">
+            <div class="mission-desc-box">
+              <h3>미션 규칙</h3>
+              <ul>
+                <li>오디오를 재생하여 주인과 지인, 경비원, 이웃의 대화를 들으세요</li>
+                <li>대화 내용과 배경음에서 차 위치에 대한 단서를 찾으세요</li>
+                <li>올바른 차 위치를 선택하세요</li>
+                <li>한 번만 선택할 수 있으니 신중하게 결정하세요</li>
+              </ul>
+            </div>
+            <div class="mission-desc-box hints">
+              <h3>힌트</h3>
+              <p>대화 내용뿐만 아니라 배경음(예: 엔진 소리, 도로 소음, 정적인 환경)도 중요한 단서가 될 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="mission-col interactive-col">
+            <div class="choices">
+              <button class="choice-btn" data-choice="parking">회사 주차장<br><small>지하 3층 A구역</small></button>
+              <button class="choice-btn" data-choice="home">자택 차고<br><small>출근 전 출발하지 않음</small></button>
+              <button class="choice-btn" data-choice="service">정비소<br><small>정기 점검 예약</small></button>
+              <button class="choice-btn" data-choice="friend">지인 대여<br><small>긴급 상황 발생</small></button>
+            </div>
+            <button id="mission2-next" class="primary-btn hidden">다음 미션</button>
+          </div>
+        </div>
+        <div id="mission2-message" class="mission-message"></div>
+      </div>
+    </section>
+
+    <!-- Mission 3: Lighting -->
+    <section id="mission3-section" class="page">
+      <div class="content">
+        <h2 class="section-title">미션 3 - 행동 기반 조명 세팅</h2>
+        <div class="mission-row mission3-row">
+          <div class="mission-col description-col">
+            <div class="mission-desc-box">
+              <h3>미션 설명</h3>
+              <p>주인의 현재 행동에 맞춰 조명과 가전을 설정합니다.</p>
+              <p>독서: 밝고 부드러운 주백색<br>수면: 은은한 따뜻한 백색<br>요리: 밝고 차가운 주방 집중등</p>
+            </div>
+            <div class="mission-desc-box hints">
+              <h3>상황 힌트</h3>
+              <p><strong>현재 소리:</strong> 책장 넘기는 소리, 편안한 클래식 음악 흘러나오는 중…</p>
+              <p><strong>주변 소품:</strong> 안경, 열린 책, 작은 독서대, 따뜻한 차 한잔…</p>
+            </div>
+          </div>
+          <div class="mission-col interactive-col">
+            <div class="lighting-preview" id="lighting-preview">현재 조명 미리보기</div>
+            <div class="lighting-options">
+              <button class="light-btn" data-light="warm">따뜻한 백색<br><small>수면에 적합</small></button>
+              <button class="light-btn" data-light="ivory">밝은 주백색<br><small>독서에 적합</small></button>
+              <button class="light-btn" data-light="cool">차가운 백색<br><small>요리에 적합</small></button>
+            </div>
+            <button id="mission3-next" class="primary-btn hidden">다음 미션</button>
+          </div>
+        </div>
+        <div id="mission3-message" class="mission-message"></div>
+      </div>
+    </section>
+
+    <!-- Mission 4: Find wedding ring -->
+    <section id="mission4-section" class="page">
+      <div class="content">
+        <h2 class="section-title">미션 4 - 결혼반지 찾기</h2>
+        <div class="mission-row mission4-row">
+          <div class="mission-col description-col">
+            <div class="mission-desc-box">
+              <h3>미션 설명</h3>
+              <ul>
+                <li>주인의 결혼반지가 사라졌습니다</li>
+                <li>집 안 곳곳의 단서들(CCTV, 음성 기록, 가전제품 로그)을 검토하세요</li>
+                <li>모든 증거를 종합하여 반지의 정확한 위치를 찾으세요</li>
+                <li>실패 시 언덕이 직접 찾아야 합니다</li>
+              </ul>
+            </div>
+          </div>
+          <div class="mission-col interactive-col">
+            <h3>가능한 위치 조사하기</h3>
+            <div class="location-cards">
+              <div class="location-card" data-loc="bedroom">
+                <h4>침실 서랍 <span class="badge cctv">CCTV 기록</span></h4>
+                <p class="loc-desc">주인이 저녁에 서랍에서 무언가를 꺼내는 모습이 기록됨</p>
+              </div>
+              <div class="location-card" data-loc="bathroom">
+                <h4>욕실 <span class="badge audio">음성 로그</span></h4>
+                <p class="loc-desc">물이 흐르는 소리와 함께 무언가 떨어지는 소리가 녹음됨</p>
+              </div>
+              <div class="location-card" data-loc="kitchen">
+                <h4>부엌 <span class="badge appliance">가전 로그</span></h4>
+                <p class="loc-desc">싱크대 배수구 사용 로그가 비정상적으로 높음</p>
+              </div>
+              <div class="location-card" data-loc="garden">
+                <h4>정원 <span class="badge convo">대화 기록</span></h4>
+                <p class="loc-desc">주인이 정원 가꾸기를 언급한 대화 내용이 발견됨</p>
+              </div>
+            </div>
+            <button id="final-select-btn" class="primary-btn">최종 위치 선택하기</button>
+            <div id="final-selection" class="final-selection hidden">
+              <p>반지는 어디에 있을까요? 선택하세요:</p>
+              <button class="final-choice" data-final="bedroom">침실 서랍</button>
+              <button class="final-choice" data-final="bathroom">욕실</button>
+              <button class="final-choice" data-final="kitchen">부엌</button>
+              <button class="final-choice" data-final="garden">정원</button>
+            </div>
+            <button id="mission4-next" class="primary-btn hidden">결과 보기</button>
+          </div>
+        </div>
+        <div id="mission4-message" class="mission-message"></div>
+      </div>
+    </section>
+
+    <!-- Results page -->
+    <section id="results-section" class="page">
+      <div class="content results-content">
+        <h2 class="section-title">최종 회고 및 결과</h2>
+        <div class="results-grid">
+          <div class="progress-circle">
+            <div class="circle-inner">
+              <span id="progress-percent">0%</span>
+              <span class="progress-label">미션 완료</span>
+            </div>
+          </div>
+          <div class="completed-missions">
+            <h3>완료한 미션</h3>
+            <ul id="completed-list">
+              <!-- list items inserted via JS -->
+            </ul>
+          </div>
+          <div class="results-message">
+            <p class="quote"><span class="quote-mark">"</span>오늘은 테스트니까 봐줬다.<span class="quote-mark">"</span></p>
+            <p class="quote-body">"진짜 상황이면 벌써 잘렸을 거다. 다음엔 나한테 더 욕 먹기 싫으면 노력해라. 가라."</p>
+            <div class="badge-line">
+              <span class="tag tag-green">모든 미션 완료!</span>
+              <span class="tag tag-green">원더랜드 정식 직원</span>
+            </div>
+            <h3 class="cert-title">원더랜드 신입 직원 자격 획득!</h3>
+            <p>언덕의 까다로운 테스트를 모두 통과했습니다. 하지만 그의 완전한 인정을 받기 위해서는 아직 더 노력해야 합니다.</p>
+            <button id="to-summary" class="primary-btn">다음 단계</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary page -->
+    <section id="summary-section" class="page">
+      <div class="content summary-content">
+        <h2 class="section-title">참여 안내 및 게임 종료</h2>
+        <div class="summary-grid">
+          <div class="summary-left">
+            <div class="medal-icon">🏅</div>
+            <h3>축하합니다!</h3>
+            <p>모든 미션을 완료하셨습니다</p>
+            <div class="game-summary">
+              <h4>게임 요약</h4>
+              <ul>
+                <li>총 미션 수 <span id="summary-missions" class="summary-value">4개</span></li>
+                <li>도전 난이도 <span id="summary-difficulty" class="summary-value">어려움</span></li>
+                <li>언덕 상사 평가 <span id="summary-rating" class="summary-value">합격</span></li>
+                <li>게임 완료 <span id="summary-complete" class="summary-value">100%</span></li>
+              </ul>
+            </div>
+            <button id="restart-btn" class="secondary-btn">다시 시작하기</button>
+          </div>
+          <div class="summary-right">
+            <div class="thanks-box">
+              <h3>감사합니다!</h3>
+              <p>원더랜드 방탈출 게임에 참여해 주셔서 감사합니다. 당신의 문제 해결 능력과 직관력이 모든 미션을 성공적으로 완수하는 데 큰 역할을 했습니다.</p>
+            </div>
+            <div class="feedback-box">
+              <h3>피드백 남기기</h3>
+              <p>게임은 어떠셨나요? 당신의 의견이 더 나은 방탈출 게임을 만드는 데 큰 도움이 됩니다.</p>
+              <div class="stars" id="star-rating">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+              </div>
+              <button id="submit-feedback" class="primary-btn">의견 남기기</button>
+            </div>
+            <div class="share-box">
+              <h3>공유하기</h3>
+              <div class="share-icons">
+                <span class="share-icon">📘</span>
+                <span class="share-icon">🐦</span>
+                <span class="share-icon">📷</span>
+                <span class="share-icon">🔗</span>
+              </div>
+            </div>
+            <button id="to-main" class="primary-btn">메인으로</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

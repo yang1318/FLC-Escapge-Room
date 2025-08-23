@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BESTIN 주문을 완성하라</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Inline styles to customise specific puzzles -->
+  <style>
+    /* stage 1 slider */
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .slider-container input[type="range"] {
+      width: 100%;
+      max-width: 300px;
+    }
+    .slider-value {
+      font-size: 1.2rem;
+      color: #cdd8f6;
+    }
+    /* stage 2 logs */
+    .logs-card {
+      background: rgba(255,255,255,0.05);
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 350px;
+      margin: 20px auto;
+      line-height: 1.4;
+    }
+    .code-input {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .code-input input {
+      width: 60px;
+      padding: 8px 12px;
+      font-size: 1.2rem;
+      text-align: center;
+      border-radius: 6px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: #e6eaf5;
+    }
+    /* stage 3 outlet gauge */
+    .outlet-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .power-display {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    .progress-ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 8px solid rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: conic-gradient(#2ecc71 0deg, #2ecc71 var(--angle), transparent var(--angle), transparent 360deg);
+      border-radius: 50%;
+      transition: width 0.1s linear;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      cursor: pointer;
+    }
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #2f81c7;
+      transition: left 0.3s ease;
+    }
+    .toggle-switch.off .toggle-thumb {
+      background: #888;
+      left: 33px;
+    }
+    /* stage 4 logs */
+    .log-list {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+    }
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+    }
+    .log-item:last-child {
+      border-bottom: none;
+    }
+    .log-item.selected {
+      background: rgba(0,128,96,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Intro page -->
+    <section id="intro-section" class="page active intro-page">
+      <div class="doors">
+        <div class="door left"></div>
+        <div class="door right"></div>
+        <div class="intro-content">
+          <h1>BESTIN 주문을 완성하라</h1>
+          <p>스승 도사가 남긴 생활 주문을 찾아 집을 지켜주세요.</p>
+          <!-- Prevent default submit behavior by specifying type button -->
+          <button id="start-btn" class="primary-btn" type="button">시작하기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guide page -->
+    <section id="guide-section" class="page">
+      <h2>AI 매니저 소개</h2>
+      <div class="profile-card">
+        <img src="ai_avatar.png" alt="AI 매니저" class="profile-img" />
+        <div class="profile-info">
+          <div class="tags">
+            <span class="tag">스마트 주문 안내자</span>
+            <span class="tag">난이도: 상</span>
+            <span class="tag">성격: 신비</span>
+          </div>
+          <p class="quote">“안녕하세요! 저는 BESTIN AI 도사입니다. 도사의 유언에 따라 주문을 완성할 준비가 되셨나요?”</p>
+          <ul class="rules">
+            <li>모든 퍼즐은 현실과 연결된 스마트 기기 체험을 기반으로 합니다.</li>
+            <li>힌트를 잘 읽고 순서대로 진행하세요.</li>
+            <li>완료 후에는 종합 결과와 칭호를 확인할 수 있습니다.</li>
+          </ul>
+          <button id="guide-next-btn" class="primary-btn" type="button">시작하기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stage 1: Brightness puzzle -->
+    <section id="stage1-section" class="page">
+      <h2>빛의 주문 – 스마트 전등</h2>
+      <div class="description-card">
+        <p>거실등 밝기를 정확한 값으로 맞추세요.</p>
+        <p class="quote">“주작은 노을빛을 좋아한다. 밝기 70%로 맞추라.”</p>
+      </div>
+      <div class="vr-container" style="text-align:center;">
+        <img src="real_living.png" alt="거실" id="stage1-img" style="width:100%;max-width:400px;border-radius:10px;filter:brightness(0.3)" />
+      </div>
+      <div class="slider-container">
+        <input type="range" id="brightness-slider" min="0" max="100" value="30" />
+        <div class="slider-value" id="slider-value">30%</div>
+      </div>
+      <div id="stage1-msg" class="mission-msg"></div>
+      <button id="stage1-next" class="next-btn" type="button" style="display:none">다음 단계</button>
+    </section>
+
+    <!-- Stage 2: Parking record puzzle -->
+    <section id="stage2-section" class="page">
+      <h2>철마의 주문 – 주차 기록</h2>
+      <div class="description-card">
+        <p>월패드에서 차량 출차 시간을 확인하고 4자리 자물쇠를 풀어보세요.</p>
+        <p class="quote">“철마가 떠난 시각을 기억하라.”</p>
+      </div>
+      <div class="logs-card" id="parking-logs">
+        <p>15:32 - 세탁기사 입차</p>
+        <p>17:45 - 가족차 출차</p>
+        <p>19:27 - 설치기사 밴 출차</p>
+      </div>
+      <div class="code-input">
+        <input type="text" id="code-input" maxlength="4" placeholder="0000" />
+      </div>
+      <div id="stage2-msg" class="mission-msg"></div>
+      <button id="stage2-next" class="next-btn" type="button" style="display:none">다음 단계</button>
+    </section>
+
+    <!-- Stage 3: Power outlet puzzle -->
+    <section id="stage3-section" class="page">
+      <h2>숨결의 주문 – 스마트 콘센트</h2>
+      <div class="description-card">
+        <p>콘센트 전력을 0W로 만들고 3초 유지하세요.</p>
+        <p class="quote">“현무의 숨을 멈춰 0이 3번 이어지면 길이 열린다.”</p>
+      </div>
+      <div class="outlet-panel">
+        <div class="power-display" id="power-display">100W</div>
+        <div class="toggle-switch" id="power-toggle"><div class="toggle-thumb"></div></div>
+        <div class="progress-ring" id="progress-ring"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+      <div id="stage3-msg" class="mission-msg"></div>
+      <button id="stage3-next" class="next-btn" type="button" style="display:none">마지막 단계</button>
+    </section>
+
+    <!-- Stage 4: Doorlock log puzzle -->
+    <section id="stage4-section" class="page">
+      <h2>마지막 문지기 – 도어락 로그</h2>
+      <div class="description-card">
+        <p>도어락 로그를 확인하여 가장 늦게 귀가한 사람을 찾으세요.</p>
+        <p class="quote">“수요일에 가장 늦게 귀가한 자가 열쇠를 가지고 있다.”</p>
+      </div>
+      <div style="text-align:center;">
+        <img src="doorlock.png" alt="Bestin 도어락" style="width:150px;height:auto;margin-bottom:10px;" />
+      </div>
+      <div class="log-list" id="door-logs">
+        <div class="log-item" data-name="A" data-time="18:30">월 18:30 – 스승 A 귀가</div>
+        <div class="log-item" data-name="B" data-time="21:10">수 21:10 – 배우 B 귀가</div>
+        <div class="log-item" data-name="C" data-time="22:05">수 22:05 – 배우 C 귀가</div>
+      </div>
+      <div id="stage4-msg" class="mission-msg"></div>
+      <button id="stage4-next" class="next-btn" type="button" style="display:none">결과 보기</button>
+    </section>
+
+    <!-- Results page -->
+    <section id="results-section" class="page">
+      <h2>결과</h2>
+      <div class="results-container">
+        <ul id="results-list"></ul>
+      </div>
+      <button id="to-summary" class="primary-btn" type="button">종합 결과</button>
+    </section>
+
+    <!-- Summary page -->
+    <section id="summary-section" class="page">
+      <h2>엔딩 – 주문의 완성</h2>
+      <p id="summary-msg"></p>
+      <div class="stars" id="star-rating">
+        <span data-star="1">☆</span>
+        <span data-star="2">☆</span>
+        <span data-star="3">☆</span>
+        <span data-star="4">☆</span>
+        <span data-star="5">☆</span>
+      </div>
+      <button id="restart-btn" class="primary-btn" type="button">다시 하기</button>
+      <button id="home-btn" class="secondary-btn" type="button">처음으로</button>
+    </section>
+  </div>
+  <!-- Append a version query to force reload of updated script -->
+  <script src="./script.js?v=1" defer></script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>보석 도난 사건 해결하기</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Custom styles for heist puzzle -->
+  <style>
+    /* Stage1 logs table */
+    .logs-table {
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .logs-table th, .logs-table td {
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .logs-table tr:not(:last-child) {
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .logs-table th {
+      background: rgba(0,0,0,0.2);
+    }
+    .checkbox-options {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 20px auto;
+      max-width: 400px;
+    }
+    .checkbox-options label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #cdd8f6;
+    }
+    .checkbox-options input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    /* Stage2 code input */
+    .code-field {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .code-field input {
+      width: 80px;
+      padding: 8px;
+      font-size: 1.2rem;
+      text-align: center;
+      border-radius: 6px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: #e6eaf5;
+    }
+    /* Stage3 cake image */
+    .cake-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .cake-container img {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .cake-container img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Intro page -->
+    <section id="intro-section" class="page intro-page" style="display:none;">
+      <div class="doors">
+        <div class="door left"></div>
+        <div class="door right"></div>
+        <div class="intro-content">
+          <h1>보석 도난 사건 해결하기</h1>
+          <p>진열장에서 사라진 보석을 찾아 범인을 밝혀주세요.</p>
+          <!-- Start button no longer used; intro page is decorative only -->
+          <button id="start-btn" class="primary-btn" type="button" style="display:none">시작하기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guide page -->
+    <section id="guide-section" class="page active">
+      <h2>AI 매니저 소개</h2>
+      <div class="profile-card">
+        <img src="ai_avatar.png" alt="AI 매니저" class="profile-img" />
+        <div class="profile-info">
+          <div class="tags">
+            <span class="tag">스마트 탐정</span>
+            <span class="tag">난이도: 중</span>
+            <span class="tag">성격: 논리적</span>
+          </div>
+          <p class="quote">“안녕하세요! 저는 BESTIN AI 탐정입니다. 사건 현장의 단서를 분석해 범인을 추적할 준비가 되셨나요?”</p>
+          <ul class="rules">
+            <li>모든 퍼즐은 실제 스마트 기기와 연동된 경험을 토대로 합니다.</li>
+            <li>단서를 잘 읽고 논리적으로 추리해보세요.</li>
+            <li>각 스테이지를 성공하면 다음 힌트를 얻을 수 있습니다.</li>
+          </ul>
+          <button id="guide-next-btn" class="primary-btn" type="button" onclick="goToSection('stage1-section')">탐정 시작</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stage1: Suspect identification -->
+    <section id="stage1-section" class="page">
+      <h2>1단계 – 범행 가능 시간대 찾기</h2>
+      <div class="description-card">
+        <p>출입 로그를 분석하여 진열장이 열려 있던 19:00–19:10 사이에 혼자 있던 사람을 찾으세요.</p>
+        <p class="quote">"진열장은 19:00–19:10 사이만 열려 있었습니다."</p>
+      </div>
+      <div style="text-align:center;">
+        <img src="display_cabinet.png" alt="진열장" style="width:100%;max-width:400px;border-radius:10px;" />
+      </div>
+      <table class="logs-table">
+        <thead>
+          <tr><th>시간</th><th>이름</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>18:54</td><td>이삿짐 팀장</td><td>IN</td></tr>
+          <tr><td>19:00</td><td>이삿짐 팀장</td><td>OUT</td></tr>
+          <tr><td>19:02</td><td>민지</td><td>IN</td></tr>
+          <tr><td>19:05</td><td>민지</td><td>OUT</td></tr>
+          <tr><td>19:08</td><td>설치기사</td><td>IN</td></tr>
+          <tr><td>19:22</td><td>설치기사</td><td>OUT</td></tr>
+        </tbody>
+      </table>
+      <div class="checkbox-options" id="suspect-options">
+        <label><input type="checkbox" value="팀장" /> 팀장 (이삿짐 팀장)</label>
+        <label><input type="checkbox" value="민지" /> 민지 (손님)</label>
+        <label><input type="checkbox" value="설치기사" /> 설치기사</label>
+      </div>
+      <div id="stage1-msg" class="mission-msg"></div>
+      <button id="stage1-next" class="next-btn" type="button" style="display:none">다음 단계</button>
+    </section>
+
+    <!-- Stage2: Code lock puzzle -->
+    <section id="stage2-section" class="page">
+      <h2>2단계 – 4자리 자물쇠</h2>
+      <div class="description-card">
+        <p>가장 짧게 머문 사람의 입·출 시간을 4자리 숫자로 입력하세요.</p>
+        <p class="quote">“가장 짧게 머문 자의 입·출 분(2자리+2자리)을 입력하라.”</p>
+      </div>
+      <table class="logs-table">
+        <thead>
+          <tr><th>이름</th><th>체류 시간</th><th>입·출</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>팀장</td><td>6분</td><td>1854-1900</td></tr>
+          <tr><td>민지</td><td>3분</td><td>1902-1905</td></tr>
+          <tr><td>설치기사</td><td>14분</td><td>1908-1922</td></tr>
+        </tbody>
+      </table>
+      <div class="code-field"><input type="text" id="code-input" maxlength="4" placeholder="0000" /></div>
+      <div id="stage2-msg" class="mission-msg"></div>
+      <button id="stage2-next" class="next-btn" type="button" style="display:none">다음 단계</button>
+    </section>
+
+    <!-- Stage3: Cake box search -->
+    <section id="stage3-section" class="page">
+      <h2>3단계 – 은닉 위치 찾기</h2>
+      <div class="description-card">
+        <p>힌트에 따라 케이크 상자를 찾아 클릭하세요. 상자 안에 숨겨진 보석 모형을 회수해야 합니다.</p>
+        <p class="quote">"작별 케이크를 의심하라."</p>
+      </div>
+      <div class="cake-container">
+        <img src="cake_box.png" alt="케이크 상자" id="cake-img" />
+      </div>
+      <div id="stage3-msg" class="mission-msg"></div>
+      <button id="stage3-next" class="next-btn" type="button" style="display:none">결과 보기</button>
+    </section>
+
+    <!-- Results page -->
+    <section id="results-section" class="page">
+      <h2>결과</h2>
+      <div class="results-container">
+        <ul id="results-list"></ul>
+      </div>
+      <button id="to-summary" class="primary-btn" type="button">종합 결과</button>
+    </section>
+
+    <!-- Summary page -->
+    <section id="summary-section" class="page">
+      <h2>엔딩 – 사건 해결</h2>
+      <p id="summary-msg"></p>
+      <div class="stars" id="star-rating">
+        <span data-star="1">☆</span>
+        <span data-star="2">☆</span>
+        <span data-star="3">☆</span>
+        <span data-star="4">☆</span>
+        <span data-star="5">☆</span>
+      </div>
+      <button id="restart-btn" class="primary-btn" type="button">다시 하기</button>
+      <button id="home-btn" class="secondary-btn" type="button">처음으로</button>
+    </section>
+  </div>
+  <!-- Append version parameter to force reload of script -->
+  <!-- Load the script normally. Avoid using query parameters on a local file path, otherwise the script fails to load. -->
+  <script src="script.js" defer></script>
+</body>
+</html>
