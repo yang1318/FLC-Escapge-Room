@@ -1,104 +1,72 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Escape Hub – 방탈출 카페</title>
-  <!-- Use the existing styles file to maintain theme consistency -->
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="script.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LABS QUEST – HDC 랩스</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="hub-app">
-    <!-- Hero section with magical animation and welcome text -->
-    <section id="hero" class="hero-section">
-      <div class="hero-bg"></div>
-      <h1 class="hero-title">AI Escape Hub</h1>
-      <p class="hero-subtitle">마법처럼 펼쳐지는 방탈출 카페에 오신 것을 환영합니다</p>
-      <a href="#games" class="scroll-down">
-        <span class="scroll-text">스크롤하여 게임 선택</span>
-        <span class="scroll-arrow"></span>
+  <!-- Hero section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-subtitle">HDC 랩스</p>
+      <h1 class="hero-title">LABS QUEST</h1>
+      <button id="scroll-down" class="scroll-down-btn" aria-label="Scroll down">
+        <span class="arrow-down">&#x25BC;</span>
+      </button>
+    </div>
+  </section>
+  <!-- Game section -->
+  <section id="games-section" class="games-section">
+    <div class="game-container">
+      <!-- Game cards -->
+      <a href="wonderland/index.html" class="game-card-link">
+        <div class="game-card" data-name="원더랜드" data-description="고된 취준 끝, ‘윈더랜드’에 입사한 당신. 신입사원의 첫걸음을 시작하세요!">
+          <img src="assets/images/wonderland.png" alt="원더랜드 포스터" />
+          <div class="overlay">
+            <h3 class="game-name">원더랜드</h3>
+            <p class="game-desc">고된 취준 끝, ‘윈더랜드’에 입사한 당신. 신입사원의 첫걸음을 시작하세요!</p>
+          </div>
+        </div>
       </a>
-    </section>
-
-    <!-- Games grid section -->
-    <section id="games" class="games-section">
-      <h2 class="section-heading">어떤 모험에 도전하시겠습니까?</h2>
-      <div class="games-grid">
-        <!-- Wonderland escape room card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/wonderland_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">이상한 나라</h3>
-            <p class="card-desc">이상한 세계에서 탈출하는 미스터리</p>
-            <button class="play-btn" data-link="wonderland_room/index.html">플레이</button>
+      <a href="" class="game-card-link">
+        <div class="game-card" data-name="도사의 마지막 주문서 찾기" data-description="베스틴 스마트홈을 지키기 위한 주문을 찾아주세요.">
+          <img src="assets/images/last_spell.png" alt="도사의 마지막 주문서 찾기 포스터" />
+          <div class="overlay">
+            <h3 class="game-name">도사의 마지막 주문서 찾기</h3>
+            <p class="game-desc">베스틴 스마트홈을 지키기 위한 주문을 찾아주세요.</p>
           </div>
         </div>
-        <!-- Smart home bestin puzzle card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/smart_home_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">스마트홈</h3>
-            <p class="card-desc">미래 집에서 펼쳐지는 퍼즐 모험</p>
-            <button class="play-btn" data-link="bestin_room/index.html">플레이</button>
+      </a>
+      <a href="" class="game-card-link">
+        <div class="game-card" data-name="찾았다! 내 집" data-description="종현과 함께 완벽한 집을 찾아보세요!">
+          <img src="assets/images/find_home.png" alt="찾았다! 내 집 포스터" />
+          <div class="overlay">
+            <h3 class="game-name">찾았다! 내 집</h3>
+            <p class="game-desc">종현의 완벽한 집을 찾아주세요!</p>
           </div>
         </div>
-        <!-- Insite puzzle card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/insite_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">인사이트</h3>
-            <p class="card-desc">데이터 분석과 자동화의 두뇌 게임</p>
-            <button class="play-btn" data-link="insite_room/index.html">플레이</button>
+      </a>
+      <a href="" class="game-card-link">
+        <div class="game-card" data-name="스마트 빌딩 매니저" data-description="빌딩의 여러 문제를 스마트하게 해결하세요.">
+          <img src="assets/images/smart_building.png" alt="스마트 빌딩 매니저 포스터" />
+          <div class="overlay">
+            <h3 class="game-name">스마트 빌딩 매니저</h3>
+            <p class="game-desc">빌딩의 여러 문제를 스마트하게 해결하세요.</p>
           </div>
         </div>
-        <!-- Inbase puzzle card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/inbase_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">인베이스</h3>
-            <p class="card-desc">스마트홈의 비밀을 풀어라</p>
-            <button class="play-btn" data-link="inbase_room/index.html">플레이</button>
-          </div>
-        </div>
-        <!-- Estate puzzle card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/house_hunt_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">집 찾기</h3>
-            <p class="card-desc">완벽한 매물을 찾는 부동산 모험</p>
-            <button class="play-btn" data-link="estate114_room/index.html">플레이</button>
-          </div>
-        </div>
-        <!-- Smart town puzzle card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/smarttown_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">스마트타운</h3>
-            <p class="card-desc">도시를 지키는 통합 미션</p>
-            <button class="play-btn" data-link="bestin_care_room/index.html">플레이</button>
-          </div>
-        </div>
-        <!-- Wizard puzzle card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/wizard_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">주문 완성</h3>
-            <p class="card-desc">도사의 주문을 풀어라</p>
-            <button class="play-btn" data-link="smart_home_wizard_room/index.html">플레이</button>
-          </div>
-        </div>
-        <!-- Jewel heist puzzle card -->
-        <div class="game-card">
-          <div class="card-bg" style="background-image: url('images/jewel_heist_poster.png');"></div>
-          <div class="card-overlay">
-            <h3 class="card-title">보석 도난</h3>
-            <p class="card-desc">범인을 찾아 보석을 되찾자</p>
-            <button class="play-btn" data-link="smart_home_jewel_room/index.html">플레이</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
+      </a>
+    </div>
+    <!-- Navigation arrows for mobile -->
+    <button class="nav-arrow left" aria-label="Previous">
+      <span>&#x25C0;</span>
+    </button>
+    <button class="nav-arrow right" aria-label="Next">
+      <span>&#x25B6;</span>
+    </button>
+  </section>
+  <script src="script.js"></script>
 </body>
 </html>
