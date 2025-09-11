@@ -3,28 +3,44 @@
    - 큰 화면: 정중앙 배치
    - 작은 화면: 비율 축소 (고정 캔버스 보전)
    ================================ */
+
 :root{
   --app-w: 1024px;
   --app-h: 1536px;
-  /* 항상 1 이하로만 축소: 100vw/1024, 100svh/1536 중 더 작은 값 */
-  --scale: min(1, min(100vw / var(--app-w), 100svh / var(--app-h)));
+
+  /* iOS 홈 인디케이터/노치 안전영역 */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* 가용 폭/높이: 안전영역을 제외한 실제 화면 */
+  --avail-w: calc(100vw - var(--safe-left) - var(--safe-right));
+  --avail-h: calc(var(--vvh, 100svh) - var(--safe-top) - var(--safe-bottom));
+  --scale: min(calc(var(--avail-w) / var(--app-w)), calc(var(--avail-h) / var(--app-h)));
 }
 
+/* ✅ 래퍼: 안전영역만큼 패딩을 주고 화면 ‘진짜 중앙’에 캔버스 배치 */
+#app-wrap{
+  position: fixed;
+  inset: 0;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  display: grid;
+  place-items: center; /* 중앙 */
+  pointer-events: none; /* 입력은 안 받고 */
+  background: #000;     /* 여백은 검정 */
+}
+
+/* body의 grid 중앙정렬/기타 transform은 제거 (중복 중앙정렬 방지) */
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  font-family: 'Pretendard', sans-serif;
-  background: #000;
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  background: #000; /* 레터박스 */
   overflow: hidden;
+  -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-  /* 중앙 배치 */
-  display: grid;
-  place-items: center;
 }
+
 
 /* 스테이지: 안전한 뷰포트 박스 (iOS 주소창 등 고려) */
 #stage{
@@ -32,27 +48,22 @@ html, body {
   inset: 0;
   width: 100vw;
   height: 100svh;
-  pointer-events: none; /* 시각적 컨테이너 */
-}
+  pointer-events: none;
+} 
 
-/* 고정 캔버스 (1024x1536) */
-#app {
-  position: relative;
+/* ✅ 실제 캔버스(#app): 스케일만 적용, 입력은 여기서 받기 */
+#app{
   width: var(--app-w);
   height: var(--app-h);
   overflow: hidden;
   background: #000;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  font-family: 'Pretendard', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-
-  /* 핵심: 작은 화면에서만 축소 + 항상 정중앙 */
-  transform: translateZ(0) scale(var(--scale));
+  pointer-events: auto;           /* 입력 활성화 */
+  transform: scale(var(--scale)); /* centerInside 스케일 */
   transform-origin: center center;
 }
 
 /* 루트 글자 크기 크게(모바일 축소 가독성 대비) */
-html { font-size: 40px; } /* 1rem = 40px */
+html { font-size: 1.5rem; }
 
 /* ================================
    Background
@@ -72,6 +83,11 @@ html { font-size: 40px; } /* 1rem = 40px */
   opacity: 0;
   transition: opacity .6s ease;
   will-change: opacity;
+}
+
+#background .bg-layer {
+  background-size: 100% 100%;   /* ← cover 대신 정확히 캔버스 크기에 맞춤 */
+  background-position: center;
 }
 
 /* 보이는 쪽 */

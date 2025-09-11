@@ -5,6 +5,20 @@
  * - 첫 사용자 상호작용 시 BGM 재생
  */
 
+// 실제 가용 높이를 --vvh로 동기화 (주소창/회전 보정)
+(function fitVisualViewport() {
+  const apply = () => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    document.documentElement.style.setProperty('--vvh', vv.height + 'px');
+  };
+  apply();
+  window.addEventListener('resize', apply);
+  window.visualViewport && window.visualViewport.addEventListener('resize', apply);
+})();
+
+
+
 // ===== 전역 상태 =====
 const state = {
   currentScene: null,
