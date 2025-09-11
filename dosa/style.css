@@ -1,0 +1,460 @@
+/* ================================
+   Global (고정 캔버스 1024 x 1536)
+   ================================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 고정 캔버스: 반응형 없음 */
+#app {
+  position: relative;
+  width: 1024px;
+  height: 1536px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #000;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'Pretendard', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+}
+
+/* 루트 글자 크기 크게(모바일 스케일 고려) */
+html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유지) */
+
+/* ================================
+   Background
+   ================================= */
+#background {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  will-change: opacity, background-image;
+  z-index: 0;
+}
+
+/* Ambient overlay: 조명 색온도에 따라 배경 분위기색 */
+#ambient-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0; /* 초기엔 꺼져 있게 시작. 조명 모달 조작 시 켜짐 */
+  transition: opacity 0.35s ease, background-color 0.18s ease, backdrop-filter 0.18s ease;
+  /* 더 강하게 색이 먹도록 */
+  mix-blend-mode: overlay;
+  /* 지원 브라우저에서 채도 소폭 증가 */
+  backdrop-filter: saturate(1.15);
+}
+
+/* ================================
+   Gauge
+   ================================= */
+#gauge-container {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  width: 140px;
+  height: 140px;
+  z-index: 5;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+
+#gauge-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 1;
+}
+
+.gauge-segment {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 2;
+}
+
+/* North (top half) */
+.gauge-segment.north {
+  background-color: rgba(0, 0, 0, 0.6);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%);
+}
+
+/* South (bottom half) */
+.gauge-segment.south {
+  background-color: rgba(255, 0, 0, 0.6);
+  clip-path: polygon(0% 50%, 100% 50%, 100% 100%, 0% 100%);
+}
+
+/* East (right half) */
+.gauge-segment.east {
+  background-color: rgba(0, 120, 255, 0.6);
+  clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+}
+
+/* West (left half) */
+.gauge-segment.west {
+  background-color: rgba(255, 255, 255, 0.7);
+  clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+}
+
+/* Center (filled when completed) */
+.gauge-segment.center {
+  width: 60%;
+  height: 60%;
+  left: 20%;
+  top: 20%;
+  background-color: rgba(255, 230, 0, 0.85);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.gauge-segment.active { opacity: 1; }
+
+/* ================================
+   Dialogue
+   ================================= */
+#dialogue-box {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 1rem; /* 40px */
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  min-height: 7.5rem; /* 300px */
+}
+
+#dialogue-box.hidden { display: none; }
+
+#character-portrait {
+  width: 5.5rem; /* 220px */
+  height: auto;
+  object-fit: cover;
+  border-radius: 0.4rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.35);
+  flex-shrink: 0;
+}
+
+#dialogue-text {
+  flex: 1;
+  font-size: 1.1rem; /* 44px */
+  line-height: 1.45;
+  white-space: pre-line;
+  word-break: keep-all;
+  letter-spacing: 0.01em;
+}
+
+/* ================================
+   Choice Buttons
+   ================================= */
+#choice-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 7.5rem; /* 대화창 위로 300px */
+  z-index: 15;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 920px;
+}
+
+#choice-container button {
+  background: linear-gradient(135deg, #78aaff, #4c6ef5);
+  color: #fff;
+  border: none;
+  padding: 1rem 1.5rem; /* 40px 60px */
+  border-radius: 1rem;   /* 40px */
+  font-size: 0.9rem;     /* 36px */
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.35);
+  min-width: 8rem;       /* 320px */
+  min-height: 2.9rem;    /* 116px (터치 타겟) */
+}
+
+#choice-container button:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+}
+
+/* ================================
+   Modal
+   ================================= */
+#modal-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;      /* 수직 중앙 */
+  justify-content: center;  /* 수평 중앙 */
+  z-index: 20;
+  padding: 24px;
+}
+
+#modal-container.hidden { display: none; }
+
+.modal-content {
+  position: relative;
+  background: #1a1a1a;
+  border-radius: 20px;
+  padding: 1.2rem;           /* 48px */
+  color: #fff;
+  max-height: 88%;
+  overflow-y: auto;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.45);
+  animation: fadeInUp 0.28s ease;
+  width: 840px;              /* 기본 폭 (개별 모달에서 재정의) */
+  margin: 0 auto;            /* 중앙 배치 보강 */
+}
+
+/* 색온도에 따라 모달 자체를 틴팅(조명 제어 모달 전용) */
+.modal-content.tintable-light {
+  /* JS가 --modal-tint-rgb / alpha 들을 실시간으로 업데이트 */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(var(--modal-tint-rgb, 255,176,64), var(--modal-tint-alpha-top, 0.00)),
+      rgba(var(--modal-tint-rgb, 255,176,64), var(--modal-tint-alpha-bottom, 0.00))
+    ),
+    #1a1a1a;
+  border: 1px solid rgba(var(--modal-tint-rgb, 255,176,64), var(--modal-stroke-alpha, 0.00));
+  box-shadow:
+    0 16px 32px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(var(--modal-tint-rgb, 255,176,64), 0.18) inset;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.modal-content h3 {
+  margin: 0 0 0.6rem 0;
+  font-size: 1.1rem;         /* 44px */
+}
+
+.modal-content p, .modal-content li, .modal-content td, .modal-content th {
+  font-size: 0.85rem;        /* 34px */
+  line-height: 1.5;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 버튼 프리셋 */
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-success {
+  display: inline-block;
+  border: none;
+  border-radius: 16px;
+  padding: 0.8rem 1.2rem;     /* 32px 48px */
+  font-size: 0.85rem;         /* 34px */
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+}
+
+.btn-primary  { background: #4c6ef5; color: #fff; }
+.btn-secondary{ background: #444;    color: #fff; }
+.btn-danger   { background: #d9534f; color: #fff; }
+.btn-success  { background: #4caf50; color: #fff; }
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-danger:active,
+.btn-success:active {
+  transform: translateY(2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+}
+
+/* 카드형 타일 */
+.tile {
+  background:#222; padding:0.8rem; border-radius:0.5rem; text-align:center;
+}
+
+/* 표 */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table thead tr { background:#333; }
+.table th, .table td { padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+
+/* 로그 리스트 */
+.log-list { margin-top: 0.5rem; line-height: 1.45; padding-left: 1rem; }
+.log-list li { margin: 0.2rem 0; }
+
+/* 입력 */
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem;               /* 24px */
+  font-size: 1rem;               /* 40px */
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #333;
+  color: #fff;
+}
+
+/* ================================
+   월패드 색온도 슬라이더 스타일
+   ================================= */
+.wallpad-light-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 0.6rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+}
+.wallpad-light-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none; /* 아래 슬라이더가 클릭받도록 */
+}
+
+/* 오른쪽 실제 슬라이더가 있는 구역에 맞춰 오버레이(비율 기반) */
+.vslider {
+  position: absolute;
+
+  top: 20%;
+  bottom: 30%;
+  right: 12%;
+  width: 38px;
+  cursor: grab;
+  touch-action: none;
+}
+.vslider:active { cursor: grabbing; }
+
+.vslider-track {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  border-radius: 999px;
+  /* 5700K(흰빛) -> 3000K(노을빛) 느낌으로 그라데이션 */
+  background: linear-gradient(to bottom, #ffffff 0%, #fff6d7 35%, #ffd590 75%, #f5a623 100%);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+}
+
+.vslider-thumb {
+  position: absolute;
+  left: 50%;
+  top: 0%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #fff;
+  /* 빨간 점선 링과 유사한 느낌의 외곽(디바이스별 차이 고려) */
+  box-shadow:
+    0 0 0 4px rgba(217, 56, 73, 0.95),
+    0 2px 4px rgba(0,0,0,0.25);
+}
+
+/* 읽기 영역 */
+.ct-readout-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+  justify-content: center;
+}
+.ct-swatch {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 0.3rem;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+  background: #fff;
+}
+.ct-readout {
+  margin: 0;
+  text-align: center;
+}
+
+/* ================================
+   Toast
+   ================================= */
+#toast {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  bottom: 160px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;            /* 32px */
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  z-index: 30;
+  pointer-events: none;
+}
+
+/* ================================
+   Hotspot 시각 디버깅 (필요 시)
+   ================================= */
+/*
+.hotspot { outline: 2px dashed rgba(255,255,255,0.35); }
+*/
+
+/* ================================
+   효과 (공용)
+   ================================= */
+.shake { animation: shake 0.3s infinite; }
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(-1deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+/* keyframes (플래시/블링크) */
+@keyframes flashRed { 0% { opacity: 0.2; } 50% { opacity: 0.6; } 100% { opacity: 0.2; } }
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+/* 반응형 제거(사용하지 않음) */
