@@ -1,36 +1,61 @@
 /* ================================
-   Global (고정 캔버스 1024 x 1536)
-   ================================= */
+   Viewport & Stage
+   - 큰 화면: 정중앙 배치
+   - 작은 화면: 비율 축소 (고정 캔버스 보전)
+   ================================ */
+:root{
+  --app-w: 1024px;
+  --app-h: 1536px;
+  /* 항상 1 이하로만 축소: 100vw/1024, 100svh/1536 중 더 작은 값 */
+  --scale: min(1, min(100vw / var(--app-w), 100svh / var(--app-h)));
+}
+
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  min-height: 100svh;
   background: #000;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  /* 중앙 배치 */
+  display: grid;
+  place-items: center;
 }
 
-/* 고정 캔버스: 반응형 없음 */
+/* 스테이지: 안전한 뷰포트 박스 (iOS 주소창 등 고려) */
+#stage{
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100svh;
+  pointer-events: none; /* 시각적 컨테이너 */
+}
+
+/* 고정 캔버스 (1024x1536) */
 #app {
   position: relative;
-  width: 1024px;
-  height: 1536px;
-  margin: 0 auto;
+  width: var(--app-w);
+  height: var(--app-h);
   overflow: hidden;
   background: #000;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   font-family: 'Pretendard', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+
+  /* 핵심: 작은 화면에서만 축소 + 항상 정중앙 */
+  transform: translateZ(0) scale(var(--scale));
+  transform-origin: center center;
 }
 
-/* 루트 글자 크기 크게(모바일 스케일 고려) */
-html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유지) */
+/* 루트 글자 크기 크게(모바일 축소 가독성 대비) */
+html { font-size: 40px; } /* 1rem = 40px */
 
 /* ================================
    Background
-   ================================= */
+   ================================ */
 #background {
   position: absolute;
   top: 0; left: 0;
@@ -54,15 +79,13 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
   pointer-events: none;
   opacity: 0; /* 초기엔 꺼져 있게 시작. 조명 모달 조작 시 켜짐 */
   transition: opacity 0.35s ease, background-color 0.18s ease, backdrop-filter 0.18s ease;
-  /* 더 강하게 색이 먹도록 */
   mix-blend-mode: overlay;
-  /* 지원 브라우저에서 채도 소폭 증가 */
   backdrop-filter: saturate(1.15);
 }
 
 /* ================================
    Gauge
-   ================================= */
+   ================================ */
 #gauge-container {
   position: absolute;
   top: 32px;
@@ -133,7 +156,7 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 
 /* ================================
    Dialogue
-   ================================= */
+   ================================ */
 #dialogue-box {
   position: absolute;
   bottom: 0; left: 0;
@@ -174,7 +197,7 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 
 /* ================================
    Choice Buttons
-   ================================= */
+   ================================ */
 #choice-container {
   position: absolute;
   left: 50%;
@@ -209,7 +232,7 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 
 /* ================================
    Modal
-   ================================= */
+   ================================ */
 #modal-container {
   position: absolute;
   top: 0; left: 0;
@@ -241,7 +264,6 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 
 /* 색온도에 따라 모달 자체를 틴팅(조명 제어 모달 전용) */
 .modal-content.tintable-light {
-  /* JS가 --modal-tint-rgb / alpha 들을 실시간으로 업데이트 */
   background:
     linear-gradient(
       180deg,
@@ -331,7 +353,7 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 
 /* ================================
    월패드 색온도 슬라이더 스타일
-   ================================= */
+   ================================ */
 .wallpad-light-wrap {
   position: relative;
   width: 100%;
@@ -412,7 +434,7 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 
 /* ================================
    Toast
-   ================================= */
+   ================================ */
 #toast {
   position: absolute;
   left: 50%; transform: translateX(-50%);
@@ -430,14 +452,12 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 
 /* ================================
    Hotspot 시각 디버깅 (필요 시)
-   ================================= */
-/*
-.hotspot { outline: 2px dashed rgba(255,255,255,0.35); }
-*/
+   ================================ */
+/* .hotspot { outline: 2px dashed rgba(255,255,255,0.35); } */
 
 /* ================================
    효과 (공용)
-   ================================= */
+   ================================ */
 .shake { animation: shake 0.3s infinite; }
 @keyframes shake {
   0% { transform: translate(1px, 1px) rotate(0deg); }
@@ -457,4 +477,12 @@ html { font-size: 40px; } /* 1rem = 40px (스케일 축소 시에도 가독 유�
 @keyframes flashRed { 0% { opacity: 0.2; } 50% { opacity: 0.6; } 100% { opacity: 0.2; } }
 @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-/* 반응형 제거(사용하지 않음) */
+/* 반응형 룰은 필요 없음 — 스케일로 해결 */
+
+/* 콘센트 모달 전용 이미지 스타일 */
+.outlet-img {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+  cursor: pointer;
+}

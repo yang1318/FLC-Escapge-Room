@@ -2,14 +2,17 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <!-- 고정 해상도(1024) 기준으로 스케일되도록 설정. 반응형 아님 -->
-    <meta name="viewport" content="width=1024, user-scalable=no" />
+    <!-- 디바이스 기준으로, 내부 고정 캔버스는 CSS로 축소 렌더링 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="format-detection" content="telephone=no" />
     <title>LABS QUEST – 스마트홈 어드벤처</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- 1024 x 1536 고정 캔버스 -->
+    <!-- 화면 전체를 담당하는 스테이지(중앙정렬 + 오버플로우 관리) -->
+    <div id="stage" aria-hidden="true"></div>
+
+    <!-- 1024 x 1536 고정 캔버스 (스테이지의 중앙에 배치되고, 작은 화면에서만 축소) -->
     <div id="app" aria-label="게임 화면 캔버스" role="application">
       <!-- Main background layer -->
       <div id="background" aria-hidden="true"></div>

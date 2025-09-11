@@ -54,6 +54,13 @@ const modalContainer = document.getElementById('modal-container');
 const toastEl = document.getElementById('toast');
 const bgm = document.getElementById('bgm');
 
+function wait(sec) {
+    let start = Date.now(), now = start;
+    while (now - start < sec * 1000) {
+        now = Date.now();
+    }
+}
+
 // ===== 이미지 프리로드 =====
 const imageCache = {};
 function preload(src) {
@@ -802,65 +809,102 @@ function openOutlet() {
   const content = document.createElement('div');
   content.className = 'modal-content';
   content.style.width = '840px';
+
+  const outletImgSrc = state.elec
+    ? 'assets/images/elecon.png'
+    : 'assets/images/elecoff.png';
+
   content.innerHTML = `
     <h3>콘센트 제어</h3>
-    <p>모든 전원을 끄고 3초간 유지하세요.</p>
-    <div id="outlet-grid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:0.5rem; margin-top:1rem;">
-      <div class="tile">거실<br><small>ON</small></div>
-      <div class="tile">방1<br><small>ON</small></div>
-      <div class="tile">방2<br><small>ON</small></div>
-      <div class="tile">방3<br><small>ON</small></div>
+    <p style="margin-top:0.3rem;">모든 전원을 끄고 3초간 유지하세요.</p>
+
+    <div style="position:relative; width:100%; margin-top:0.8rem;">
+      <img id="outlet-img" src="${outletImgSrc}" alt="콘센트 상태"
+           class="outlet-img" />
     </div>
-    <div style="margin-top:1rem; text-align:center;">
-      <button id="outlet-off" class="btn-danger">전체끄기</button>
-    </div>
-    <p id="outlet-timer" style="text-align:center; margin-top:0.5rem;"></p>
+
     <div style="text-align:center; margin-top:1rem;">
       <button id="outlet-close" class="btn-secondary">닫기</button>
     </div>
   `;
+
   modalContainer.innerHTML = '';
   modalContainer.appendChild(content);
   modalContainer.classList.remove('hidden');
 
-  const offBtn = content.querySelector('#outlet-off');
-  const timerP = content.querySelector('#outlet-timer');
-  let countdown;
+  const outletImg = content.querySelector('#outlet-img');
 
-  offBtn.addEventListener('click', () => {
-    offBtn.disabled = true;
-    let remaining = 3;
-    timerP.textContent = `${remaining}초...`;
-    countdown = setInterval(() => {
-      remaining--;
-      if (remaining > 0) {
-        timerP.textContent = `${remaining}초...`;
-      } else {
-        clearInterval(countdown);
-        timerP.textContent = '완료!';
-        // ==== 전역 상태: elec false (전력 차단됨) ====
-        state.elec = false;
-        refreshDynamicBackgroundIfNeeded();
+  // OFF 유지 카운트다운 타이머 관리
+  let offTimers = [];
+  let offFlowActive = false;
+  function clearOffFlow() {
+    offTimers.forEach(t => clearTimeout(t));
+    offTimers = [];
+    offFlowActive = false;
+  }
 
-        if (!state.missions.north) {
-          state.missions.north = true;
-          updateGauge();
-          showCreature('black_tortoise');
-          showToast('현무의 힘이 깨어났습니다!');
-        }
+  function startOffFlow() {
+    clearOffFlow();
+    offFlowActive = true;
+
+    // 즉시 OFF 토스트
+    showToast('전원 off');
+
+    // 1, 2, 3초 경과 토스트
+    offTimers.push(setTimeout(() => { if (!state.elec && offFlowActive) showToast('1초'); }, 1000));
+    offTimers.push(setTimeout(() => { if (!state.elec && offFlowActive) showToast('2초'); }, 2000));
+    offTimers.push(setTimeout(() => { if (!state.elec && offFlowActive) showToast('3초'); }, 3000));
+
+    // 추가 1초 쉬고(총 4초) 최초 1회 연출
+    offTimers.push(setTimeout(() => {
+      if (!state.elec && offFlowActive && !state.missions.north) {
+        state.missions.north = true;
+        updateGauge();
+        showCreature('black_tortoise');
+        showToast('현무의 힘이 깨어났습니다!');
         setTimeout(() => {
           modalContainer.classList.add('hidden');
           checkAllMissions();
         }, 1200);
       }
-    }, 1000);
+      clearOffFlow();
+    }, 4000));
+  }
+
+  outletImg.addEventListener('click', () => {
+    const before = state.elec;
+    state.elec = !state.elec;
+
+    // 이미지/배경 갱신
+    outletImg.src = state.elec ? 'assets/images/elecon.png' : 'assets/images/elecoff.png';
+    refreshDynamicBackgroundIfNeeded();
+
+    if (state.elec) {
+      // ON으로 전환 → 어떤 흐름이든 중단
+      clearOffFlow();
+      showToast('전원 on');
+    } else {
+      // OFF로 전환
+      // ⚠️ 이미 한 번 현무 미션을 달성했다면(= 최초가 아님) 카운트다운/연출 생략
+      if (state.missions.north) {
+        clearOffFlow();        // 혹시 남아있을 타이머 정리
+        showToast('전원 off'); // 간단 안내만
+        return;
+      }
+      // 최초 OFF 전환일 때만 카운트다운 시작
+      startOffFlow();
+    }
   });
 
   content.querySelector('#outlet-close').addEventListener('click', () => {
-    if (countdown) clearInterval(countdown);
+    clearOffFlow();
     modalContainer.classList.add('hidden');
   });
 }
+
+
+
+
 
 // ===== 주차 기록 =====
 function openParking() {
