@@ -399,10 +399,6 @@ const scenes = [
         text: '제자여.. 스마트홈에 숨어있는 4개의 생활 주문을 풀어 사방신을 깨워야한다. 그래야 이 재앙을 멈출 수 있다.'
       },
       {
-        speaker: 'Narrator',
-        text: '작은 나무로 된 동그라미가 화면 우측 상단에 생긴다.'
-      },
-      {
         speaker: '도사',
         expression: 'assets/images/sage_face.png',
         text: '베스틴 스마트홈에 가보자.'
