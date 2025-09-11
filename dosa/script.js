@@ -653,7 +653,7 @@ function runLivingRoom() {
 function openNote() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '840px';
+  content.style.setProperty('--modal-max', '840px');
   content.innerHTML = `
     <h3>쪽지</h3>
     <p>방을 노을빛으로 물들이면 사방신 주작이 깨어난다.</p>
@@ -676,7 +676,7 @@ function openNote() {
 function openWallpad() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '960px';
+  content.style.setProperty('--modal-max', '960px');
   content.style.position = 'relative';
 
   const title = document.createElement('h3');
@@ -747,7 +747,7 @@ function openWallpad() {
 function openLighting() {
   const content = document.createElement('div');
   content.className = 'modal-content tintable-light'; /* 모달 틴팅 활성 */
-  content.style.width = '900px';
+  content.style.setProperty('--modal-max', '960px');
 
   content.innerHTML = `
     <h3>조명 제어</h3>
@@ -955,7 +955,7 @@ function openLighting() {
 function openOutlet() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '840px';
+  content.style.setProperty('--modal-max', '960px');
 
   const outletImgSrc = state.elec
     ? 'assets/images/elecon.png'
@@ -1057,8 +1057,7 @@ function openOutlet() {
 function openParking() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '90vw';
-  content.style.maxWidth = '800px';
+  content.style.setProperty('--modal-max', '960px');
   content.style.height = 'auto';
   content.style.position = 'relative';
   // Title
@@ -1104,7 +1103,7 @@ function openParking() {
 function openVentilation() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '960px';
+  content.style.setProperty('--modal-max', '960px');
 
   // 현재 vent 상태에 따른 이미지 선택
   const ventImgSrc = state.vent ? 'assets/images/venton.png' : 'assets/images/ventoff.png';
@@ -1168,8 +1167,7 @@ function openVentilation() {
 function openCarLock() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '80vw';
-  content.style.maxWidth = '400px';
+  content.style.setProperty('--modal-max', '960px');
   content.innerHTML = `
     <h3>가장 마지막 "철마차"가 떠난 시간과 분을 기억하라.</h3>
     <p>그럼 백호가 움직일 것이다.</p>
