@@ -27,7 +27,7 @@
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   display: grid;
   place-items: center; /* 중앙 */
-  pointer-events: none; /* 입력은 안 받고 */
+  pointer-events: auto; /* 입력은 안 받고 */
   background: #000;     /* 여백은 검정 */
 }
 
@@ -51,19 +51,19 @@ html, body {
   pointer-events: none;
 } 
 
-/* ✅ 실제 캔버스(#app): 스케일만 적용, 입력은 여기서 받기 */
-#app{
-  width: var(--app-w);
-  height: var(--app-h);
-  overflow: hidden;
-  background: #000;
-  pointer-events: auto;           /* 입력 활성화 */
-  transform: scale(var(--scale)); /* centerInside 스케일 */
-  transform-origin: center center;
+#app {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1024px;   /* 고정 캔버스 */
+  height: 1536px;  /* 고정 캔버스 */
+  transform: none;           /* ❗ JS가 설정할 겁니다 */
+  transform-origin: 0 0;     /* 좌상단 기준으로만 이동+스케일 */
+  will-change: transform;    /* 부드럽게 */
 }
 
 /* 루트 글자 크기 크게(모바일 축소 가독성 대비) */
-html { font-size: 1.5rem; }
+html { font-size: 24px; }
 
 /* ================================
    Background
@@ -78,20 +78,14 @@ html { font-size: 1.5rem; }
 #background .bg-layer {
   position: absolute;
   inset: 0;
-  /* ⭐ 핵심: fitCenter와 동일한 동작 */
-  background-size: contain;          /* 비율 유지 + 전체가 보이게 */
-  background-position: center center;/* 중앙 정렬 */
-  background-repeat: no-repeat;      /* 여백은 이미지 반복 금지 */
-  background-color: #000;            /* 남는 내부 여백은 검정(레터박스) */
+  background-size: contain;          /* ✅ 비율 유지 + 전체 표시 */
+  background-position: center center;/* ✅ 중앙 정렬 */
+  background-repeat: no-repeat;      /* ✅ 반복 금지 */
+  background-color: #000;            /* ✅ 내부 레터박스 검정 */
 
   opacity: 0;
   transition: opacity .6s ease;
   will-change: opacity;
-}
-
-#background .bg-layer {
-  background-size: 100% 100%;   /* ← cover 대신 정확히 캔버스 크기에 맞춤 */
-  background-position: center;
 }
 
 /* 보이는 쪽 */
@@ -217,8 +211,8 @@ html { font-size: 1.5rem; }
 #dialogue-box.hidden { display: none; }
 
 #character-portrait {
-  width: 20vw;
-  max-width: 120px;
+  width: 128px;
+  max-width: none;
   height: auto;
   object-fit: cover;
   border-radius: 0.5rem;
@@ -520,12 +514,4 @@ html { font-size: 1.5rem; }
   display: block;
   border-radius: 8px;
   cursor: pointer;
-}
-
-/* style.css 제일 아래 쪽에 추가 (우선순위/캐시 이슈 방지 위해 !important) */
-#background .bg-layer{
-  background-size: contain !important;       /* 비율 유지 + 전체 표시 */
-  background-position: center center !important;
-  background-repeat: no-repeat !important;
-  image-rendering: auto;
 }

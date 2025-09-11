@@ -5,20 +5,6 @@
  * - 첫 사용자 상호작용 시 BGM 재생
  */
 
-// 실제 가용 높이를 --vvh로 동기화 (주소창/회전 보정)
-(function fitVisualViewport() {
-  const apply = () => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    document.documentElement.style.setProperty('--vvh', vv.height + 'px');
-  };
-  apply();
-  window.addEventListener('resize', apply);
-  window.visualViewport && window.visualViewport.addEventListener('resize', apply);
-})();
-
-
-
 // ===== 전역 상태 =====
 const state = {
   currentScene: null,
@@ -68,6 +54,78 @@ const modalContainer = document.getElementById('modal-container');
 const toastEl = document.getElementById('toast');
 const bgm = document.getElementById('bgm');
 
+window.onerror = (m, s, l, c, e) => console.log('[ERR]', m, s+':'+l, e);
+console.log('app?', !!document.getElementById('app'), 'vv?', !!window.visualViewport);
+
+// 실제 가용 높이를 --vvh로 동기화 (주소창/회전 보정)
+(function fitVisualViewport() {
+  const apply = () => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    document.documentElement.style.setProperty('--vvh', vv.height + 'px');
+  };
+  apply();
+  window.addEventListener('resize', apply);
+  window.visualViewport && window.visualViewport.addEventListener('resize', apply);
+})();
+
+(function fitCenterLayout() {
+  const APP_W = 1024, APP_H = 1536;
+  const UPSCALE = true; // fitCenter (업/다운)
+
+  function apply() {
+    if (!app) return; // 안전 가드
+
+    const vv = window.visualViewport;
+    const w = Math.max(1, Math.round(vv?.width  || window.innerWidth  || document.documentElement.clientWidth  || 1));
+    const h = Math.max(1, Math.round(vv?.height || window.innerHeight || document.documentElement.clientHeight || 1));
+
+    const sRaw = Math.min(w / APP_W, h / APP_H);
+    const s = UPSCALE ? sRaw : Math.min(1, sRaw);
+
+    // 측정값이 불안정하면 다음 프레임에 재시도
+    if (!isFinite(s) || s <= 0) {
+      requestAnimationFrame(apply);
+      return;
+    }
+
+    if (vv && typeof vv.offsetLeft === 'number' && typeof vv.offsetTop === 'number') {
+      // ✅ visualViewport 보정 브랜치 (주소창/폴더블 오프셋 대응)
+      const baseW = Math.round(window.innerWidth  || w);
+      const baseH = Math.round(window.innerHeight || h);
+      const x = ((baseW - APP_W * s) / 2) + vv.offsetLeft;
+      const y = ((baseH - APP_H * s) / 2) + vv.offsetTop;
+
+      app.style.top = '0';
+      app.style.left = '0';
+      app.style.transformOrigin = '0 0';
+      app.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${s})`;
+    } else {
+      // ✅ 폴백: 레이아웃 뷰포트 중앙 정렬
+      app.style.top = '50%';
+      app.style.left = '50%';
+      app.style.transformOrigin = '50% 50%';
+      app.style.transform = `translate(-50%, -50%) scale(${s})`;
+    }
+
+    app.style.visibility = 'visible'; // 첫 레이아웃 성공 → 노출
+    relayoutInteractiveLayer();       // 레터박스 박스에 맞춰 핫스팟 재배치
+  }
+
+  // 첫 적용 전엔 깜빡임 방지
+  if (app) app.style.visibility = 'hidden';
+
+  // 즉시 1회 + 로드/회전/주소창 변화마다 재적용
+  requestAnimationFrame(apply);
+  window.addEventListener('load', apply);
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', apply);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', apply);
+    window.visualViewport.addEventListener('scroll', apply);
+  }
+})();
+
 function wait(sec) {
     let start = Date.now(), now = start;
     while (now - start < sec * 1000) {
@@ -112,20 +170,58 @@ function ensureBgLayers() {
   }
 }
 
+function getImageContentBox() {
+  const appW = app.clientWidth;   // 1024
+  const appH = app.clientHeight;  // 1536
+
+  const active = backgroundEl.querySelector('.bg-layer.active');
+  const src = active?.dataset.src;
+  const im  = src && imageCache[src];
+  if (!im || !im.naturalWidth || !im.naturalHeight) {
+    return { left:0, top:0, width:appW, height:appH };
+  }
+
+  const iw = im.naturalWidth, ih = im.naturalHeight;
+  const s  = Math.min(appW/iw, appH/ih); // fitCenter 스케일
+  const width  = iw * s;
+  const height = ih * s;
+  const left   = (appW - width)  / 2;
+  const top    = (appH - height) / 2;
+  return { left, top, width, height };
+}
+
+function relayoutInteractiveLayer() {
+  const layer = state.livingRoomLayer;
+  if (!layer) return;
+  const box = getImageContentBox();
+  Object.assign(layer.style, {
+    left:  box.left + 'px',
+    top:   box.top  + 'px',
+    width: box.width + 'px',
+    height: box.height + 'px'
+  });
+}
+
 let flip = false;
 function setBackground(src) {
   ensureBgLayers();
   const [a, b] = backgroundEl.querySelectorAll('.bg-layer');
-  const top  = flip ? b : a;  // 올라올 레이어
-  const back = flip ? a : b;  // 내려갈 레이어
+  const top  = flip ? b : a;
+  const back = flip ? a : b;
 
   const img = preload(src);
-  const swap = async () => {
-    back.style.backgroundImage = `url(${src})`;
-    // 크로스페이드
+  const swap = () => {
+    back.style.backgroundImage   = `url("${src}")`;
+    back.style.backgroundSize    = 'contain';   // 안전망
+    back.style.backgroundPosition= 'center';
+    back.style.backgroundRepeat  = 'no-repeat';
+
+    back.dataset.src = src;                     // ✅ 현재 이미지 경로 보관
     top.classList.remove('active');
     back.classList.add('active');
     flip = !flip;
+
+    relayoutInteractiveLayer();                 // ✅ 핫스팟/레이어 재배치
   };
 
   if (img.complete) swap();
@@ -388,17 +484,30 @@ function showScene(id) {
   }
 }
 
-// ===== 대사 클릭/스킵 =====
-dialogueBox.addEventListener('click', () => {
-  if (state.typing) {
-    state.skipRequested = true;
-    return;
-  }
-  if (state.waitingClick) {
-    state.waitingClick = false;
-    showNextLine();
-  }
-});
+// 대사 클릭/스킵 =====
+let lastAdvanceAt = 0;                     // ← 추가
+
+function advanceDialogue() {
+  const now = Date.now();                  // ← 추가
+  if (now - lastAdvanceAt < 220) return;   // ← 220ms 내 중복 호출 무시
+  lastAdvanceAt = now;                     // ← 추가
+
+  if (modalContainer && !modalContainer.classList.contains('hidden')) return; // 모달 열렸으면 무시
+  if (state.typing) { state.skipRequested = true; return; }
+  if (state.waitingClick) { state.waitingClick = false; showNextLine(); }
+}
+
+dialogueBox.addEventListener('pointerdown', (e) => {
+  e.preventDefault();        // ← click 생성 억제
+  e.stopPropagation();       // ← 상위 app의 pointerdown으로 올라가는 것 차단
+  advanceDialogue();
+}, { passive: false });
+
+// (선택) 화면 아무 곳 탭해도 진행되게 하고 싶다면:
+app.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('.modal-content, #choice-container, .vslider, .hotspot, button, a')) return;
+  advanceDialogue();
+}, { passive: true });
 
 // ===== 씬 정의 =====
 const scenes = [
@@ -537,6 +646,7 @@ function runLivingRoom() {
 
   app.appendChild(layer);
   state.livingRoomLayer = layer;
+  relayoutInteractiveLayer();
 }
 
 // ===== 쪽지 =====
@@ -1241,16 +1351,18 @@ function init() {
     'assets/images/elecon_tigeron_venton.png'
   ].forEach(preload);
 
-  // BGM: 첫 상호작용 시 재생
-  bgm.volume = 0.4;
-  const resumeAudio = () => {
-    bgm.play().catch(() => {});
-    window.removeEventListener('pointerdown', resumeAudio);
-    window.removeEventListener('keydown', resumeAudio);
-  };
-  window.addEventListener('pointerdown', resumeAudio);
-  window.addEventListener('keydown', resumeAudio);
+  if (bgm) {
+    bgm.volume = 0.4;
+    const resumeAudio = () => {
+      bgm.play().catch(() => {});
+      window.removeEventListener('pointerdown', resumeAudio);
+      window.removeEventListener('keydown', resumeAudio);
+    };
+    window.addEventListener('pointerdown', resumeAudio);
+    window.addEventListener('keydown', resumeAudio);
 
+  }
+  
   // 시작
   showScene(1);
 }
