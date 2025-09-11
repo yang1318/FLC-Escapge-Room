@@ -20,7 +20,7 @@ const state = {
     east: false,  // blue (청룡)
     center: false // yellow (황중앙)
   },
-  lastParkingCode: '104251',
+  lastParkingCode: '1345',
   livingRoomLayer: null,
   // 현재 선택된 색온도(앰비언트 유지용). 초기값은 5700K(하얀빛).
   ambientKelvin: 5700,
@@ -86,14 +86,36 @@ function showToast(msg) {
 }
 
 // ===== 배경 페이드 전환 =====
+// Fade the background to a new image
+function ensureBgLayers() {
+  if (!backgroundEl.querySelector('.bg-layer')) {
+    const a = document.createElement('div');
+    const b = document.createElement('div');
+    a.className = 'bg-layer active';
+    b.className = 'bg-layer';
+    backgroundEl.appendChild(a);
+    backgroundEl.appendChild(b);
+  }
+}
+
+let flip = false;
 function setBackground(src) {
+  ensureBgLayers();
+  const [a, b] = backgroundEl.querySelectorAll('.bg-layer');
+  const top  = flip ? b : a;  // 올라올 레이어
+  const back = flip ? a : b;  // 내려갈 레이어
+
   const img = preload(src);
-  img.onload = () => {
-    backgroundEl.style.backgroundImage = `url(${src})`;
-    backgroundEl.style.opacity = '1';
+  const swap = async () => {
+    back.style.backgroundImage = `url(${src})`;
+    // 크로스페이드
+    top.classList.remove('active');
+    back.classList.add('active');
+    flip = !flip;
   };
-  backgroundEl.style.backgroundImage = `url(${src})`;
-  backgroundEl.style.opacity = '1';
+
+  if (img.complete) swap();
+  else img.addEventListener('load', swap, { once: true });
 }
 
 /* ===========================================================
@@ -384,10 +406,6 @@ const scenes = [
         text: '제자여.. 스마트홈에 숨어있는 4개의 생활 주문을 풀어 사방신을 깨워야한다. 그래야 이 재앙을 멈출 수 있다.'
       },
       {
-        speaker: 'Narrator',
-        text: '작은 나무로 된 동그라미가 화면 우측 상단에 생긴다.'
-      },
-      {
         speaker: '도사',
         expression: 'assets/images/sage_face.png',
         text: '베스틴 스마트홈에 가보자.'
@@ -495,7 +513,12 @@ function runLivingRoom() {
   car.style.cursor = 'pointer';
   car.style.pointerEvents = 'auto';
   car.setAttribute('title', '장난감 자동차');
-  car.addEventListener('click', () => openCarLock());
+  car.addEventListener('click', () => {
+      if (!state.missions.west) {
+        openCarLock()
+      }
+    }
+  );
   layer.appendChild(car);
 
   app.appendChild(layer);
@@ -910,36 +933,47 @@ function openOutlet() {
 function openParking() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '920px';
-  content.innerHTML = `
-    <h3>주차 확인</h3>
-    <p>출입내역에서 마지막 출차기록을 확인하세요.</p>
-    <table class="table mt-1">
-      <thead>
-        <tr>
-          <th>시간</th>
-          <th>구분</th>
-          <th>차량번호</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>07:45</td><td>입차</td><td>12가 1234</td></tr>
-        <tr><td>08:12</td><td>출차</td><td>34나 5678</td></tr>
-        <tr><td>08:50</td><td>입차</td><td>11마 2222</td></tr>
-        <tr><td>10:42</td><td>출차</td><td>${state.lastParkingCode}</td></tr>
-      </tbody>
-    </table>
-    <div style="margin-top:1rem; text-align:center;">
-      <button id="parking-close" class="btn-secondary">닫기</button>
-    </div>
-  `;
+  content.style.width = '90vw';
+  content.style.maxWidth = '800px';
+  content.style.height = 'auto';
+  content.style.position = 'relative';
+  // Title
+  const title = document.createElement('h3');
+  title.textContent = '월패드';
+  title.style.textAlign = 'center';
+  title.style.marginBottom = '0.5rem';
+  content.appendChild(title);
+  // Wallpad image container
+  const padWrapper = document.createElement('div');
+  padWrapper.style.position = 'relative';
+  padWrapper.style.width = '100%';
+  padWrapper.style.borderRadius = '1rem';
+  padWrapper.style.overflow = 'hidden';
+  padWrapper.style.marginBottom = '1rem';
+  const img = document.createElement('img');
+  img.src = 'assets/images/wallpad_car_history.png';
+  img.style.width = '100%';
+  img.style.display = 'block';
+  padWrapper.appendChild(img);
+  content.appendChild(padWrapper);
+  // Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '닫기';
+  closeBtn.style.display = 'block';
+  closeBtn.style.margin = '0 auto';
+  closeBtn.style.padding = '0.5rem 1rem';
+  closeBtn.style.background = '#444';
+  closeBtn.style.color = '#fff';
+  closeBtn.style.border = 'none';
+  closeBtn.style.borderRadius = '0.5rem';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.addEventListener('click', () => {
+    modalContainer.classList.add('hidden');
+  });
+  content.appendChild(closeBtn);
   modalContainer.innerHTML = '';
   modalContainer.appendChild(content);
   modalContainer.classList.remove('hidden');
-
-  content.querySelector('#parking-close').addEventListener('click', () => {
-    modalContainer.classList.add('hidden');
-  });
 }
 
 // ===== 환기 =====
@@ -1010,27 +1044,25 @@ function openVentilation() {
 function openCarLock() {
   const content = document.createElement('div');
   content.className = 'modal-content';
-  content.style.width = '720px';
+  content.style.width = '80vw';
+  content.style.maxWidth = '400px';
   content.innerHTML = `
-    <h3>장난감 자동차 비밀번호</h3>
-    <p>주차출입 내역에서 찾은 번호를 입력하세요.</p>
-    <input type="text" id="car-code" class="input" placeholder="비밀번호 입력" />
+    <h3>가장 마지막 "철마차"가 떠난 시간과 분을 기억하라.</h3>
+    <p>그럼 백호가 움직일 것이다.</p>
+    <input type="text" id="car-code" style="width:100%; padding:0.5rem; font-size:1rem; margin-top:0.5rem; border-radius:0.5rem; border:none; background:#333; color:#fff;" placeholder="비밀번호 입력" />
     <div style="text-align:center; margin-top:1rem;">
-      <button id="car-confirm" class="btn-primary">확인</button>
-      <button id="car-close" class="btn-secondary" style="margin-left:0.5rem;">닫기</button>
+      <button id="car-confirm" style="padding:0.5rem 1rem; background:#0a84ff; color:#fff; border:none; border-radius:0.5rem; cursor:pointer;font-size: 0.8rem;">확인</button>
+      <button id="car-close" style="padding:0.5rem 1rem; margin-left:0.5rem; background:#444; color:#fff; border:none; border-radius:0.5rem; cursor:pointer;font-size: 0.8rem;">닫기</button>
     </div>
   `;
   modalContainer.innerHTML = '';
   modalContainer.appendChild(content);
   modalContainer.classList.remove('hidden');
-
   content.querySelector('#car-confirm').addEventListener('click', () => {
     const code = content.querySelector('#car-code').value.trim();
     if (code === state.lastParkingCode) {
-      // ==== 전역 상태: tiger true (비밀번호 해제 성공) ====
       state.tiger = true;
       refreshDynamicBackgroundIfNeeded();
-
       if (!state.missions.west) {
         state.missions.west = true;
         updateGauge();
@@ -1040,10 +1072,7 @@ function openCarLock() {
       modalContainer.classList.add('hidden');
       checkAllMissions();
     } else {
-      // 요구사항상 "해제 못했을 때 = false" 유지
-      state.tiger = false;
       showToast('비밀번호가 틀렸습니다.');
-      refreshDynamicBackgroundIfNeeded();
     }
   });
   content.querySelector('#car-close').addEventListener('click', () => {
