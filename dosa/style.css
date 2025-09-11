@@ -74,12 +74,16 @@ html { font-size: 1.5rem; }
   z-index: 0;
 }
 
-/* 두 개의 이미지 레이어 공통 스타일 */
+/* 기존의 100% 100% 또는 cover 설정을 'contain'으로 교체 */
 #background .bg-layer {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
+  /* ⭐ 핵심: fitCenter와 동일한 동작 */
+  background-size: contain;          /* 비율 유지 + 전체가 보이게 */
+  background-position: center center;/* 중앙 정렬 */
+  background-repeat: no-repeat;      /* 여백은 이미지 반복 금지 */
+  background-color: #000;            /* 남는 내부 여백은 검정(레터박스) */
+
   opacity: 0;
   transition: opacity .6s ease;
   will-change: opacity;
@@ -516,4 +520,12 @@ html { font-size: 1.5rem; }
   display: block;
   border-radius: 8px;
   cursor: pointer;
+}
+
+/* style.css 제일 아래 쪽에 추가 (우선순위/캐시 이슈 방지 위해 !important) */
+#background .bg-layer{
+  background-size: contain !important;       /* 비율 유지 + 전체 표시 */
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  image-rendering: auto;
 }
