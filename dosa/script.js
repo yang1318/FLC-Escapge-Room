@@ -320,31 +320,68 @@ function updateGauge() {
 }
 
 // ===== 사신 연출 =====
+(function ensureCreatureKeyframes(){
+  if (document.getElementById('creature-anim-style')) return;
+  const s = document.createElement('style');
+  s.id = 'creature-anim-style';
+  s.textContent = `
+    @keyframes fadeCreature { from{opacity:0; transform:scale(.88)} to{opacity:1; transform:scale(1)} }
+    @-webkit-keyframes fadeCreature { from{opacity:0; -webkit-transform:scale(.88)} to{opacity:1; -webkit-transform:scale(1)} }
+  `;
+  document.head.appendChild(s);
+})();
+
 function showCreature(creature) {
+  // 현재 화면에서 최상위 z-index를 찾아 +20 올려서 확실히 최상단으로
+  const topZ = Math.max(
+    parseInt(getComputedStyle(modalContainer).zIndex) || 0,
+    parseInt(getComputedStyle(dialogueBox).zIndex) || 0,
+    parseInt(getComputedStyle(toastEl).zIndex) || 0,
+    parseInt(getComputedStyle(gaugeContainer).zIndex) || 0,
+    0
+  ) + 20;
+
   const overlay = document.createElement('div');
-  overlay.style.position = 'absolute';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.display = 'flex';
-  overlay.style.alignItems = 'center';
-  overlay.style.justifyContent = 'center';
-  overlay.style.zIndex = '50';
-  overlay.style.pointerEvents = 'none';
-  overlay.style.background = 'rgba(0,0,0,0.45)';
+  Object.assign(overlay.style, {
+    position: 'absolute',
+    inset: '0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: String(topZ),          // ← 모달보다 항상 위
+    pointerEvents: 'none',         // ← 밑의 클릭 막지 않음
+    background: 'rgba(0,0,0,0.45)',
+    opacity: '0',
+    transition: 'opacity .2s ease'
+  });
 
-  const img = document.createElement('img');
+  const img = new Image();
   img.src = `assets/images/${creature}.png`;
-  img.style.width = '512px';
-  img.style.maxWidth = '512px';
-  img.style.objectFit = 'contain';
-  img.style.animation = 'fadeCreature 1.2s ease forwards';
-  overlay.appendChild(img);
+  Object.assign(img.style, {
+    width: 'min(80vw, 560px)',
+    maxWidth: '100%',
+    height: 'auto',
+    objectFit: 'contain',
+    willChange: 'transform, opacity',
+    animation: 'none',
+    WebkitAnimation: 'none'
+  });
 
+  overlay.appendChild(img);
   app.appendChild(overlay);
-  setTimeout(() => overlay.remove(), 1400);
+
+  const start = () => {
+    // 오버레이 페이드인 후 본체 애니메이션
+    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+    img.style.animation = 'fadeCreature 1.2s ease forwards';
+    img.style.WebkitAnimation = 'fadeCreature 1.2s ease forwards';
+    setTimeout(() => overlay.remove(), 1300);
+  };
+
+  if (img.complete) start();
+  else img.addEventListener('load', start, { once: true });
 }
+
 
 // keyframes (사신 페이드)
 const creatureStyle = document.createElement('style');
