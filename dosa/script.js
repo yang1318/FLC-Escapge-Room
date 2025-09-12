@@ -1458,7 +1458,14 @@ function init() {
     'assets/images/elecon_tigeroff_ventoff.png',
     'assets/images/elecon_tigeroff_venton.png',
     'assets/images/elecon_tigeron_ventoff.png',
-    'assets/images/elecon_tigeron_venton.png'
+    'assets/images/elecon_tigeron_venton.png',
+    'assets/images/wallpad_car_home.png',
+    'assets/images/venton.png',
+    'assets/images/ventoff.png',
+    'assets/images/ventilation_ui.png',
+    'assets/images/Color_Temperature_Adjustment_Screen.png',
+    'assets/images/elecoff.png',
+    'assets/images/elecon.png',
   ].forEach(preload);
 
   if (bgm) {
