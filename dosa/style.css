@@ -63,7 +63,9 @@ html, body {
 }
 
 /* 루트 글자 크기 크게(모바일 축소 가독성 대비) */
-html { font-size: 24px; }
+html {
+  font-size: clamp(34px, 42px - 0.5vw, 34px);
+}
 
 /* ================================
    Background

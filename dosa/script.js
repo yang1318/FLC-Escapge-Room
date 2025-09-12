@@ -1227,6 +1227,34 @@ function openCarLock() {
   modalContainer.innerHTML = '';
   modalContainer.appendChild(content);
   modalContainer.classList.remove('hidden');
+
+  // 1) 모달 내용 전체를 세로 컬럼 + 가운데 정렬
+  Object.assign(content.style, {
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  });
+
+// 2) 입력창 폭은 너무 넓지 않게, 가운데 배치 + 입력 글자도 가운데
+  const codeInput = content.querySelector('#car-code');
+  Object.assign(codeInput.style, {
+    width: 'min(100%, 420px)',
+    marginTop: '0.8rem',
+    marginInline: 'auto',
+    textAlign: 'center'
+  });
+
+  // 3) 버튼 줄은 플렉스로 가운데 정렬 + 간격
+  const btnRow = content.querySelector('#car-confirm').parentElement;
+  Object.assign(btnRow.style, {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    marginTop: '1rem',
+    textAlign: 'center' // 혹시 모를 상속 이슈 대비
+  });
+
   content.querySelector('#car-confirm').addEventListener('click', () => {
     const code = content.querySelector('#car-code').value.trim();
     if (code === state.lastParkingCode) {
