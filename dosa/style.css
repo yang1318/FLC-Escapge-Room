@@ -262,34 +262,39 @@ html { font-size: 24px; }
 /* ================================
    Modal
    ================================ */
+/* ===== Modal sanity override (최우선) ===== */
 #modal-container {
-  position: absolute; inset: 0;
-  display: grid; place-items: center;
-  padding-block: clamp(12px, 3vh, 36px);
-  padding-inline: clamp(12px, 3vw, 36px);
-  background: rgba(0,0,0,0.45); /* 배경 흐림이 사라졌다면 이 줄이 필요 */
-  box-sizing: border-box;
-}
-
-
-#modal-container:not(.hidden) { display: flex; }
-
-#modal-container::before {
-  content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  display: grid !important;       /* 중앙정렬 강제 */
+  place-items: center !important;  /* 중앙정렬 강제 */
+  padding-block: clamp(12px, 3vh, 36px);
+  padding-inline: clamp(12px, 3vw, 36px);
+
+  /* 어둡힘을 컨테이너 자체에서 주면 확실함 */
+  background: rgba(0,0,0,0.45); /* 배경 흐림이 사라졌다면 이 줄이 필요 */
+
+  box-sizing: border-box;
+  pointer-events: auto;
+  z-index: 80 !important;          /* 대화상자/게이지/토스트 위로 */
 }
 
-#modal-container.hidden { display: none; }
+/* flex 덮어쓰기 규칙 무력화 */
+#modal-container:not(.hidden) { display: grid !important; }
 
+/* 숨김은 확실히 none 처리 */
+#modal-container.hidden { display: none !important; }
+
+/* 중복 어둡힘 방지: ::before는 끔 */
+#modal-container::before { content: none !important; }
+
+/* 모달 박스만 클릭 활성 (배경 클릭은 통과) */
 #modal-container .modal-content {
-  width: min(100%, var(--modal-max, 900px)); /* 고정폭 대신 최대폭 */
-  max-height: 100%;
-  overflow: auto;
-
-  /* 내부 가변 패딩: 공간 있으면 넉넉하게 */
-  padding: clamp(16px, 2.0vh, 28px) clamp(18px, 2.2vw, 36px);
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  isolation: isolate;
+padding: clamp(16px, 2.0vh, 28px) clamp(18px, 2.2vw, 36px);
 
   background: rgba(20,20,20,0.92);
   color: #fff;
@@ -298,8 +303,8 @@ html { font-size: 24px; }
     0 20px 60px rgba(0,0,0,0.45),
     0 0 0 1px rgba(255,255,255,0.06) inset;
   box-sizing: border-box;
-  backdrop-filter: blur(3px);
-}
+  backdrop-filter: blur(3px)}
+
 
 /* 색온도에 따라 모달 자체를 틴팅(조명 제어 모달 전용) */
 .modal-content.tintable-light {
@@ -488,7 +493,27 @@ html { font-size: 24px; }
 /* ================================
    Hotspot 시각 디버깅 (필요 시)
    ================================ */
-/* .hotspot { outline: 2px dashed rgba(255,255,255,0.35); } */
+/* 월패드 아이콘용 오버레이 레이어 + 버튼 */
+.hotspot-layer { 
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hotspot-btn {
+  position: absolute;
+  pointer-events: auto;
+  background: transparent;
+  z-index: 4;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+/* 디버그 보기(테두리 보여주기) — padWrapper에 .debug 붙이면 표시됨 */
+.debug .hotspot-btn { outline: 2px dashed rgba(0,255,255,.7); background: rgba(0,255,255,.08); }
 
 /* ================================
    효과 (공용)

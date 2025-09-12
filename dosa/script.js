@@ -583,6 +583,11 @@ const scenes = [
 ];
 
 // ===== 거실 인터랙션 레이어 =====
+
+function isModalOpen() {
+  return modalContainer && !modalContainer.classList.contains('hidden');
+}
+
 function runLivingRoom() {
   gaugeContainer.style.display = 'block';
   updateGauge();
@@ -608,7 +613,11 @@ function runLivingRoom() {
   wallpad.style.cursor = 'pointer';
   wallpad.style.pointerEvents = 'auto';
   wallpad.setAttribute('title', '월패드');
-  wallpad.addEventListener('click', () => openWallpad());
+  // 월패드
+  wallpad.addEventListener('click', (e) => {
+    if (isModalOpen()) return;   // ← 모달 켜져 있으면 무시
+    openWallpad();
+  });
   layer.appendChild(wallpad);
 
   // 액자 (소파 위)
@@ -622,7 +631,10 @@ function runLivingRoom() {
   frame.style.cursor = 'pointer';
   frame.style.pointerEvents = 'auto';
   frame.setAttribute('title', '액자');
-  frame.addEventListener('click', () => openNote());
+  frame.addEventListener('click', (e) => {
+  if (isModalOpen()) return;   // ← 모달 켜져 있으면 무시
+  openNote();
+});
   layer.appendChild(frame);
 
   // 장난감 자동차 (하단 좌측)
@@ -636,12 +648,10 @@ function runLivingRoom() {
   car.style.cursor = 'pointer';
   car.style.pointerEvents = 'auto';
   car.setAttribute('title', '장난감 자동차');
-  car.addEventListener('click', () => {
-      if (!state.missions.west) {
-        openCarLock()
-      }
-    }
-  );
+  car.addEventListener('click', (e) => {
+    if (isModalOpen()) return;   // ← 모달 켜져 있으면 무시
+    if (!state.missions.west) openCarLock();
+  });
   layer.appendChild(car);
 
   app.appendChild(layer);
@@ -667,17 +677,21 @@ function openNote() {
   modalContainer.innerHTML = '';
   modalContainer.appendChild(content);
   modalContainer.classList.remove('hidden');
+  modalContainer.addEventListener('click', (e) => {
+    if (!e.target.closest('.modal-content')) modalContainer.classList.add('hidden');
+  });
   document.getElementById('close-note').addEventListener('click', () => {
     modalContainer.classList.add('hidden');
   });
 }
 
 // ===== 월패드 홈 =====
+
+
 function openWallpad() {
   const content = document.createElement('div');
   content.className = 'modal-content';
   content.style.setProperty('--modal-max', '960px');
-  content.style.position = 'relative';
 
   const title = document.createElement('h3');
   title.textContent = '월패드';
@@ -691,38 +705,75 @@ function openWallpad() {
   padWrapper.style.borderRadius = '16px';
   padWrapper.style.overflow = 'hidden';
   padWrapper.style.marginBottom = '1rem';
+  padWrapper.style.touchAction = 'manipulation';
 
   const img = document.createElement('img');
   img.src = 'assets/images/wallpad_home.png';
   img.style.width = '100%';
   img.style.display = 'block';
+  img.draggable = false;
+  img.alt = '';
+  img.setAttribute('aria-hidden', 'true');
+  img.style.pointerEvents = 'none';     // 이미지가 이벤트 먹지 않도록
   padWrapper.appendChild(img);
 
-  // 클릭 좌표로 아이콘 영역 판별 (우측 45% 영역, 2x2)
-  padWrapper.addEventListener('click', (e) => {
+  // 아이콘 영역 정의 (0~1 비율 좌표)
+  const ICONS = [
+    { key:'parking',  label:'출차기록', onClick: openParking,
+      rect:{ left:0.50, top:0.15, width:0.08, height:0.16 } },
+    { key:'light',    label:'조명',     onClick: openLighting,
+      rect:{ left:0.60, top:0.15, width:0.08, height:0.16 } },
+    { key:'vent',     label:'환기',     onClick: openVentilation,
+      rect:{ left:0.70, top:0.15, width:0.08, height:0.16 } },
+    { key:'outlet',   label:'콘센트',   onClick: openOutlet,
+      rect:{ left:0.80, top:0.15, width:0.08, height:0.16 } },
+  ];
+
+  // (선택) 디버그 박스: 클릭과 무관, 시각화만 함
+  const dbg = document.createElement('div');
+  dbg.style.position = 'absolute';
+  dbg.style.inset = '0';
+  dbg.style.pointerEvents = 'none';     // ← 클릭 가로채지 않음
+  padWrapper.appendChild(dbg);
+  // padWrapper.classList.add('debug'); // 켜면 박스 보이게
+  if (padWrapper.classList.contains('debug')) {
+    ICONS.forEach(ic => {
+      const box = document.createElement('div');
+      box.style.position = 'absolute';
+      box.style.left   = (ic.rect.left  * 100) + '%';
+      box.style.top    = (ic.rect.top   * 100) + '%';
+      box.style.width  = (ic.rect.width * 100) + '%';
+      box.style.height = (ic.rect.height* 100) + '%';
+      box.style.outline = '2px dashed rgba(0,255,255,.7)';
+      box.style.background = 'rgba(0,255,255,.08)';
+      box.style.pointerEvents = 'none';
+      dbg.appendChild(box);
+    });
+  }
+
+  // ✅ 한 군데(padWrapper)에서만 클릭을 받아 좌표 판정
+  padWrapper.addEventListener('pointerup', (e) => {
+    // 모달 외부로 전파 금지
     e.stopPropagation();
+
     const rect = padWrapper.getBoundingClientRect();
-    const xRatio = (e.clientX - rect.left) / rect.width;
-    const yRatio = (e.clientY - rect.top) / rect.height;
+    const x = (e.clientX - rect.left) / rect.width;   // 0~1
+    const y = (e.clientY - rect.top)  / rect.height;  // 0~1
 
-    if (xRatio < 0.55) return; // 좌측은 무시
+    const hit = ICONS.find(ic =>
+      x >= ic.rect.left && x <= ic.rect.left + ic.rect.width &&
+      y >= ic.rect.top  && y <= ic.rect.top  + ic.rect.height
+    );
 
-    const row = yRatio < 0.45 ? 'top' : 'bottom';
-    const col = xRatio < 0.73 ? 'left' : 'right';
-
-    modalContainer.classList.add('hidden');
-    if (row === 'top' && col === 'left') {
-      openLighting();
-    } else if (row === 'top' && col === 'right') {
-      openVentilation();
-    } else if (row === 'bottom' && col === 'left') {
-      openParking();
-    } else if (row === 'bottom' && col === 'right') {
-      openOutlet();
-    } else {
-      showToast('아직 구현되지 않은 기능입니다.');
+    if (hit) {
+      console.log('[HIT-map]', hit.key, x.toFixed(3), y.toFixed(3));
+      requestAnimationFrame(() => hit.onClick());
     }
-  });
+  }, { passive: true });
+
+  // 모달 내부 이벤트는 앱으로 버블 금지
+  content.addEventListener('pointerdown', (e) => e.stopPropagation(), { passive: true });
+  content.addEventListener('click', (e) => e.stopPropagation());
 
   content.appendChild(padWrapper);
 
@@ -731,15 +782,14 @@ function openWallpad() {
   closeBtn.className = 'btn-secondary';
   closeBtn.style.display = 'block';
   closeBtn.style.margin = '0 auto';
-  closeBtn.addEventListener('click', () => {
-    modalContainer.classList.add('hidden');
-  });
+  closeBtn.addEventListener('click', () => modalContainer.classList.add('hidden'));
   content.appendChild(closeBtn);
 
   modalContainer.innerHTML = '';
   modalContainer.appendChild(content);
   modalContainer.classList.remove('hidden');
 }
+
 
 /* =========================================
    조명 – 실제 월패드 색온도 슬라이더 구현 (개선)
@@ -1048,9 +1098,6 @@ function openOutlet() {
     modalContainer.classList.add('hidden');
   });
 }
-
-
-
 
 
 // ===== 주차 기록 =====
