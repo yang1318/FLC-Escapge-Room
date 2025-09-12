@@ -558,7 +558,7 @@ const scenes = [
   },
   {
     id: 2,
-    background: 'assets/images/white_bg.png',
+    background: 'assets/images/ruined_city.png',
     script: [
       {
         speaker: '도사',
@@ -757,13 +757,13 @@ function openWallpad() {
   // 아이콘 영역 정의 (0~1 비율 좌표)
   const ICONS = [
     { key:'parking',  label:'출차기록', onClick: openParking,
-      rect:{ left:0.50, top:0.15, width:0.08, height:0.16 } },
+      rect:{ left:0.50, top:0.15, width:0.2, height:0.3 } },
     { key:'light',    label:'조명',     onClick: openLighting,
-      rect:{ left:0.60, top:0.15, width:0.08, height:0.16 } },
+      rect:{ left:0.7, top:0.15, width:0.2, height:0.3 } },
     { key:'vent',     label:'환기',     onClick: openVentilation,
-      rect:{ left:0.70, top:0.15, width:0.08, height:0.16 } },
+      rect:{ left:0.50, top:0.5, width:0.2, height:0.3 } },
     { key:'outlet',   label:'콘센트',   onClick: openOutlet,
-      rect:{ left:0.80, top:0.15, width:0.08, height:0.16 } },
+      rect:{ left:0.7, top:0.5, width:0.2, height:0.3 } },
   ];
 
   // (선택) 디버그 박스: 클릭과 무관, 시각화만 함
