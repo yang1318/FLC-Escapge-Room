@@ -552,7 +552,7 @@ const scenes = [
     id: 1,
     background: 'assets/images/ruined_city.png',
     script: [
-      { speaker: 'Narrator', text: '도사가 사라지고, 스마트 홈시스템이 마비됐다.' }
+      { speaker: 'Narrator', text: '도사가 사라지고, 스마트홈 시스템이 마비됐다.' }
     ],
     nextScene: 2
   },
@@ -827,6 +827,34 @@ function openWallpad() {
   modalContainer.classList.remove('hidden');
 }
 
+// 모달 백드롭(#modal-container)도 색온도로 틴트
+function setModalBackdropTintFromKelvin(k) {
+  if (!modalContainer) return;
+
+  // ambient와 동일한 보정 로직 기반(알파만 아주 낮게)
+  const K_MIN = 3000, K_MAX = 5700;
+  const src = kelvinToRGB(k);
+  const warmTarget = { r: 255, g: 176, b: 64 };
+  const t = Math.min(1, Math.max(0, (K_MAX - k) / (K_MAX - K_MIN)));
+  const blendAmt = 0.22 + 0.50 * t; // 따뜻할수록 목표색 쪽으로
+  const r = Math.round(src.r + (warmTarget.r - src.r) * blendAmt);
+  const g = Math.round(src.g + (warmTarget.g - src.g) * blendAmt);
+  const b = Math.round(src.b + (warmTarget.b - src.b) * blendAmt);
+
+  // 백드롭은 은은하게만(기본 어둡힘 위에 아주 옅게 덮기)
+  const a = (0.05 + 0.12 * t).toFixed(3); // 0.05 ~ 0.17
+  modalContainer.style.background = `
+    linear-gradient(to bottom, rgba(${r},${g},${b},${a}), rgba(${r},${g},${b},${a})),
+    rgba(0,0,0,0.45)
+  `;
+}
+
+// 모달 백드롭 틴트 제거(원복)
+function clearModalBackdropTint() {
+  if (!modalContainer) return;
+  modalContainer.style.background = 'rgba(0,0,0,0.45)';
+}
+
 
 /* =========================================
    조명 – 실제 월패드 색온도 슬라이더 구현 (개선)
@@ -935,6 +963,8 @@ function openLighting() {
     // 배경/모달 동시에 업데이트 (항상 표시)
     setAmbientFromKelvin(k);
     setModalTintFromKelvin(k);
+    setModalBackdropTintFromKelvin(k); // ← 추가
+
 
     const label = kelvinToLabel(k);
 
@@ -958,6 +988,7 @@ function openLighting() {
               content.style.removeProperty('--modal-tint-alpha-top');
               content.style.removeProperty('--modal-tint-alpha-bottom');
               content.style.removeProperty('--modal-stroke-alpha');
+              clearModalBackdropTint(); // ← 추가
               checkAllMissions();
             }, 1200);
           }
@@ -1035,6 +1066,7 @@ function openLighting() {
     content.style.removeProperty('--modal-tint-alpha-top');
     content.style.removeProperty('--modal-tint-alpha-bottom');
     content.style.removeProperty('--modal-stroke-alpha');
+    clearModalBackdropTint(); // ← 추가
   });
 }
 
@@ -1198,9 +1230,6 @@ function openVentilation() {
       <img id="vent-img" src="${ventImgSrc}" alt="환기 상태" 
            style="width:100%; border-radius:8px; display:block; cursor:pointer;" />
     </div>
-    <p style="text-align:center; margin-top:0.6rem;">
-      이미지를 탭/클릭하면 환기 상태가 전환됩니다. (OFF ↔ ON)
-    </p>
     <div style="text-align:center; margin-top:1rem;">
       <button id="vent-close" class="btn-secondary">닫기</button>
     </div>
@@ -1230,14 +1259,20 @@ function openVentilation() {
     if (!before && state.vent && !state.missions.east) {
       state.missions.east = true;
       updateGauge();
-      showCreature('blue_dragon');
       showToast('청룡의 힘이 깨어났습니다!');
-      // 연출 후 자연스럽게 모달 닫고 다음 진행 체크
+
+      const delay = 1000; // 1초 쉬고
       setTimeout(() => {
-        modalContainer.classList.add('hidden');
-        checkAllMissions();
-      }, 1200);
+        showCreature('blue_dragon'); // 그 다음 등장
+
+        // 등장 애니메이션 시간(약 1.2초)에 맞춰 모달 닫기
+        setTimeout(() => {
+          modalContainer.classList.add('hidden');
+          checkAllMissions();
+        }, 1200);
+      }, delay);
     }
+
   });
 
   content.querySelector('#vent-close').addEventListener('click', () => {
@@ -1323,6 +1358,49 @@ function checkAllMissions() {
     }, 500);
   }
 }
+
+// 모든 미션 완료 여부
+function areAllMissionsTrue() {
+  return state.missions.south && state.missions.north && state.missions.west && state.missions.east && state.missions.center;
+}
+
+// 탈출성공 모달
+function showEscapeSuccessModal(onClose) {
+  // 이미 모달 열려있다면 초기화
+  modalContainer.innerHTML = '';
+  modalContainer.classList.remove('hidden');
+
+  const content = document.createElement('div');
+  content.className = 'modal-content';
+  content.style.setProperty('--modal-max', '960px');
+  content.style.textAlign = 'center';
+
+  content.innerHTML = `
+    <h3 style="font-size:1.2rem; margin-bottom:0.6rem;">탈출 성공</h3>
+    <div style="width:100%; display:flex; justify-content:center;">
+      <img src="assets/images/door_open.gif" alt="문이 열리는 애니메이션"
+           style="max-width:600px; width:100%; height:auto; border-radius:12px;" />
+    </div>
+    <p style="margin-top:0.8rem; font-size:0.9rem;">사방신의 힘이 모두 깨어났습니다.</p>
+    <div style="text-align:center; margin-top:1rem;">
+      <button id="escape-ok" class="btn-success">계속</button>
+    </div>
+  `;
+
+  modalContainer.appendChild(content);
+
+  // 외부 클릭으로 닫히지 않도록(원하면 열어도 됨)
+  modalContainer.addEventListener('click', (e) => {
+    if (!e.target.closest('.modal-content')) e.stopPropagation();
+  }, { once: true });
+
+  content.querySelector('#escape-ok').addEventListener('click', () => {
+    modalContainer.classList.add('hidden');
+    if (typeof onClose === 'function') onClose();
+  });
+}
+
+
 
 // ===== 게이지 완성 연출 =====
 function runGaugeComplete() {
@@ -1435,10 +1513,20 @@ function runInfiltration() {
     btn.className = 'btn-primary';
     btn.addEventListener('click', () => {
       if (ch.value === 'A') {
-        modalContainer.classList.add('hidden');
+        // 먼저 center 달성
         state.missions.center = true;
         updateGauge();
-        showScene(6);
+
+        // 침입자 모달 닫기
+        modalContainer.classList.add('hidden');
+
+        // 모든 미션이 true라면 탈출성공 모달 → 닫으면 엔딩(6)로
+        if (areAllMissionsTrue()) {
+          showEscapeSuccessModal(() => showScene(6));
+        } else {
+          // 방어적 처리(이론상 도달 X)
+          showScene(6);
+        }
       } else {
         showToast('틀렸습니다. 다시 생각해보세요.');
       }
