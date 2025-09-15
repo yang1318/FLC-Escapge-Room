@@ -1495,6 +1495,7 @@ function runInfiltration() {
       <li>05:20 PM - 사용자 A (스마트폰 인증)</li>
       <li>07:10 PM - 사용자 A (스마트폰 인증)</li>
     </ul>
+    <p>힌트 : 동일 사용자가 짧은 시간 간격으로 다른 인증 수단을 반복 사용하고 있어요!</p>
     <div id="intrusion-choices" class="choice-col"></div>
   `;
   modalContainer.innerHTML = '';

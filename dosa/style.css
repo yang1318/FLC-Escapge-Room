@@ -261,6 +261,35 @@ html {
   box-shadow: 0 6px 12px rgba(0,0,0,0.3);
 }
 
+/* 침입자 선택 버튼 정렬/간격 */
+.choice-col {
+    display: flex;
+    justify-content: center;      /* 가로 가운데 정렬 */
+    align-items: center;          /* 세로 가운데 정렬 */
+    gap: clamp(8px, 2.5vw, 16px); /* 버튼 사이 간격 (반응형) */
+    flex-wrap: wrap;              /* 줄바꿈 허용 (모바일) */
+    margin-top: 16px;
+}
+
+/* 버튼 터치 영역 넉넉하게 */
+.choice-col .btn-primary {
+    padding: 12px 18px;
+    min-height: 44px;             /* 접근성 권장 터치 높이 */
+    min-width: 120px;
+    border-radius: 12px;
+}
+
+/* 모바일에서 버튼이 너무 붙지 않도록 한 줄에 하나씩도 보기 좋게 */
+@media (max-width: 480px) {
+    .choice-col .btn-primary {
+        width: 100%;
+        max-width: 280px;         /* 너무 길어지지 않게 제한 */
+    }
+}
+
+/* flex-gap 미지원 브라우저용 안전망 */
+.no-flex-gap .choice-col .btn-primary { margin: 6px; }
+
 /* ================================
    Modal
    ================================ */
