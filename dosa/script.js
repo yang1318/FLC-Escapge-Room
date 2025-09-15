@@ -827,28 +827,6 @@ function openWallpad() {
   modalContainer.classList.remove('hidden');
 }
 
-// 모달 백드롭(#modal-container)도 색온도로 틴트
-function setModalBackdropTintFromKelvin(k) {
-  if (!modalContainer) return;
-
-  // ambient와 동일한 보정 로직 기반(알파만 아주 낮게)
-  const K_MIN = 3000, K_MAX = 5700;
-  const src = kelvinToRGB(k);
-  const warmTarget = { r: 255, g: 176, b: 64 };
-  const t = Math.min(1, Math.max(0, (K_MAX - k) / (K_MAX - K_MIN)));
-  const blendAmt = 0.22 + 0.50 * t; // 따뜻할수록 목표색 쪽으로
-  const r = Math.round(src.r + (warmTarget.r - src.r) * blendAmt);
-  const g = Math.round(src.g + (warmTarget.g - src.g) * blendAmt);
-  const b = Math.round(src.b + (warmTarget.b - src.b) * blendAmt);
-
-  // 백드롭은 은은하게만(기본 어둡힘 위에 아주 옅게 덮기)
-  const a = (0.05 + 0.12 * t).toFixed(3); // 0.05 ~ 0.17
-  modalContainer.style.background = `
-    linear-gradient(to bottom, rgba(${r},${g},${b},${a}), rgba(${r},${g},${b},${a})),
-    rgba(0,0,0,0.45)
-  `;
-}
-
 // 모달 백드롭 틴트 제거(원복)
 function clearModalBackdropTint() {
   if (!modalContainer) return;
@@ -963,7 +941,6 @@ function openLighting() {
     // 배경/모달 동시에 업데이트 (항상 표시)
     setAmbientFromKelvin(k);
     setModalTintFromKelvin(k);
-    setModalBackdropTintFromKelvin(k); // ← 추가
 
 
     const label = kelvinToLabel(k);
@@ -988,7 +965,6 @@ function openLighting() {
               content.style.removeProperty('--modal-tint-alpha-top');
               content.style.removeProperty('--modal-tint-alpha-bottom');
               content.style.removeProperty('--modal-stroke-alpha');
-              clearModalBackdropTint(); // ← 추가
               checkAllMissions();
             }, 1200);
           }
@@ -1066,7 +1042,6 @@ function openLighting() {
     content.style.removeProperty('--modal-tint-alpha-top');
     content.style.removeProperty('--modal-tint-alpha-bottom');
     content.style.removeProperty('--modal-stroke-alpha');
-    clearModalBackdropTint(); // ← 추가
   });
 }
 
